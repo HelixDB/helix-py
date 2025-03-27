@@ -1,14 +1,16 @@
 from helix.types import DataType, HELIX
 import os
-from typing import Set, List
-#import pyarrow.parquet as pq # TODO: custom write
+from typing import Set, List, Tuple, Any
+import pyarrow.parquet as pq # TODO: custom write
+from tqdm import tqdm # TODO: write custom
 
 class Loader:
-    def __init__(self, data_path: str):
+    def __init__(self, data_path: str, cols: List[str]=None):
+        self.files: List[str] = None
         self.data_path: str = data_path
         self.data_type: DataType = self._check_data_type(data_path)
+        self.cols: List[str] = cols
         print(f"{HELIX}: using data_type: '{self.data_type}'")
-        self.files: List[str] = None
 
     def _check_data_type(self, data_path: str) -> DataType:
         if not os.path.isdir(data_path):
@@ -38,8 +40,32 @@ class Loader:
 
         return found_types.pop()
 
-    def _parquet(self, cols: List[str]=None):
-        raise NotImplementedError("Parquet file reading not yet implemented")
+    def _parquet(self) -> List[Tuple[Any, ...]]:
+        parquet_files = [f for f in self.files if f.endswith(".parquet")]
+
+        parquet_files = parquet_files[:-8] # NOTE: remove after testing
+
+        if not parquet_files:
+            raise ValueError(f"No Parquet files found in directory '{self.data_path}'")
+
+        all_data = []
+
+        # TODO: tqdm by data point not by file
+        for filename in tqdm(parquet_files, desc="Loading Parquet Files", unit="File"):
+            file_path = os.path.join(self.data_path, filename)
+            table = pq.read_table(file_path)
+            cols_to_read = self.cols if self.cols else table.column_names
+
+            for col in cols_to_read:
+                if col not in table.column_names:
+                    raise ValueError(f"Column '{col}' not found in file '{filename}'")
+
+            column_data = [table.column(col).to_pylist() for col in cols_to_read]
+
+            file_data = list(zip(*column_data))
+            all_data.extend(file_data)
+
+        return all_data
 
     def _arrow(self):
         raise NotImplementedError("Arrow file reading not yet implemented")
@@ -50,16 +76,17 @@ class Loader:
     def _csv(self):
         raise NotImplementedError("CSV file reading not yet implemented")
 
-    def get_data(self, cols: List[str]):
+    def get_data(self):
         data_type_methods = {
             DataType.PARQUET: self._parquet,
             DataType.ARROW: self._arrow,
             DataType.FVECS: self._fvecs,
             DataType.CSV: self._csv
         }
-        method = data_type_methods(self.data_type)
+
+        method = data_type_methods[self.data_type]
 
         if method is None:
             raise ValueError(f"No method Found for data type: {self.data_path}")
 
-        return method(cols)
+        return method()
