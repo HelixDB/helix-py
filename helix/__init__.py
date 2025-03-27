@@ -1,6 +1,6 @@
 # env vars?
 
-from helix.client import HelixClient
+from helix.client import Client
 from helix.types import *
 from helix.loader import *
 
