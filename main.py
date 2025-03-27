@@ -1,10 +1,12 @@
+# EXAMPLE
+
 import helix
 from helix.client import HNSWSearch, HNSWInsert
 
-db = helix.Client("https://localhost:6969")
+db = helix.Client()
 dpedia_data = helix.Loader("data/dpedia-openai-1m")
 db.query(HNSWInsert(dpedia_data))
-vecs = db.query(HNSWSearch(k=10))
+#vecs = db.query(HNSWSearch(k=10))
 
 
 
