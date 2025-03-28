@@ -37,7 +37,7 @@ class hnswinsert(Query):
 
     def insert(self):
         data = self.data_loader.get_data()
-        payload = data[0][:] # or "vec": data[0]
+        payload = data[0][0]
         return payload
 
 # sample default
@@ -63,24 +63,26 @@ class Client:
     def _construct_full_url(self, endpoint: str) -> str:
         return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
 
+    # GET
     def query(self, query: Query):
         pass
 
+    # IDK YET
     def delete(self):
         pass
 
+    # POST
     def insert(self, query: Query) -> bool:
         data = json.dumps(query.insert()).encode("utf-8")
-        print(self._construct_full_url(query.endpoint))
         ep = self._construct_full_url(query.endpoint)
+        print(f"{GHELIX} sending request to {ep}")
         try:
             req = urllib.request.Request(
                 ep,
                 data=data,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
+                method='POST',
             )
-
-            print(f"{data}")
 
             with urllib.request.urlopen(req) as response:
                 return response.getcode() == 200

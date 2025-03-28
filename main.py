@@ -5,7 +5,8 @@ from helix.client import hnswsearch, hnswinsert
 
 db = helix.Client()
 dpedia_data = helix.Loader("data/dpedia-openai-1m", cols=["openai"])
-db.insert(hnswinsert(dpedia_data))
+res = db.insert(hnswinsert(dpedia_data))
+print(res)
 #vecs = db.query(HNSWSearch(query_vec, k=10))
 #print(vecs)
 
