@@ -2,7 +2,8 @@ import numpy as np
 from numpy.typing import NDArray
 from enum import Enum
 
-HELIX = "\033[32m[HELIX]\033[0m"
+GHELIX = "\033[32m[HELIX]\033[0m"
+RHELIX = "\033[31m[HELIX]\033[0m"
 
 class DataType(Enum):
     PARQUET = ".parquet"

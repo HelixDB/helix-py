@@ -1,4 +1,4 @@
-from helix.types import DataType, HELIX
+from helix.types import DataType, GHELIX, RHELIX
 import os
 from typing import Set, List, Tuple, Any
 import pyarrow.parquet as pq # TODO: custom write
@@ -10,7 +10,7 @@ class Loader:
         self.data_path: str = data_path
         self.data_type: DataType = self._check_data_type(data_path)
         self.cols: List[str] = cols
-        print(f"{HELIX}: using data_type: '{self.data_type}'")
+        print(f"{GHELIX} using data_type: '{self.data_type}'")
 
     def _check_data_type(self, data_path: str) -> DataType:
         if not os.path.isdir(data_path):
@@ -43,7 +43,7 @@ class Loader:
     def _parquet(self) -> List[Tuple[Any, ...]]:
         parquet_files = [f for f in self.files if f.endswith(".parquet")]
 
-        parquet_files = parquet_files[:-8] # NOTE: remove after testing
+        parquet_files = parquet_files[:-9] # NOTE: remove after testing
 
         if not parquet_files:
             raise ValueError(f"No Parquet files found in directory '{self.data_path}'")

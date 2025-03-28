@@ -1,4 +1,5 @@
 from helix.loader import Loader
+from helix.types import GHELIX, RHELIX
 import socket
 import json
 import urllib.request
@@ -17,6 +18,7 @@ class Query:
     """
     def __init__(self, endpoint: str):
         self.endpoint = endpoint
+        # TODO: somehow check if endpoint is valid (or just check when trying to send)
 
     def query(self):
         pass
@@ -28,21 +30,18 @@ class Query:
         pass
 
 # sample default
-class HNSWLoad(Query):
+class hnswinsert(Query):
     def __init__(self, data_loader: Loader):
-        super().__init__(__name__)
+        super().__init__(__class__.__name__)
         self.data_loader: Loader = data_loader
 
     def insert(self):
         data = self.data_loader.get_data()
-        print(data[0])
-
-        payload = { "data": data }
-
+        payload = data[0][:] # or "vec": data[0]
         return payload
 
 # sample default
-class HNSWSearch(Query):
+class hnswsearch(Query):
     def __init__(self, query, k: int=10):
         super().__init__(__name__)
         self.query = query
@@ -51,17 +50,18 @@ class HNSWSearch(Query):
         pass
 
 class Client:
-    def __init__(self, url: str="https://localhost", port: int=80):
+    def __init__(self, url: str="https://localhost", port: int=6969):
         self.h_server_url = url
         self.h_server_port = port
-        #try:
-        #    hostname = url.replace("http://", "").replace("https://", "").split("/")[0]
-        #    socket.create_connection((hostname, port), timeout=5)
-        #except socket.error:
-        #    raise Exception(f"helix server not available at '{url}:{port}'")
+        try:
+            hostname = url.replace("http://", "").replace("https://", "").split("/")[0]
+            socket.create_connection((hostname, port), timeout=5)
+            print(f"{GHELIX} Helix instance found at '{hostname}:{port}'")
+        except socket.error:
+            raise Exception(f"helix server not available at '{url}:{port}'")
 
     def _construct_full_url(self, endpoint: str) -> str:
-        return f"{self.h_server_url}/{endpoint}"
+        return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
 
     def query(self, query: Query):
         pass
@@ -70,14 +70,17 @@ class Client:
         pass
 
     def insert(self, query: Query) -> bool:
-        # call query.insert() or query.query()
-        data = json.dumps
+        data = json.dumps(query.insert()).encode("utf-8")
+        print(self._construct_full_url(query.endpoint))
+        ep = self._construct_full_url(query.endpoint)
         try:
             req = urllib.request.Request(
-                self._construct_full_url(query.endpoint),
+                ep,
                 data=data,
                 headers={"Content-Type": "application/json"}
             )
+
+            print(f"{data}")
 
             with urllib.request.urlopen(req) as response:
                 return response.getcode() == 200
