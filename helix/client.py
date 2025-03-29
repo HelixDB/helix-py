@@ -23,19 +23,13 @@ class Query:
     def query(self):
         pass
 
-    def insert(self):
-        pass
-
-    def delete(self):
-        pass
-
 # sample default
 class hnswinsert(Query):
     def __init__(self, data_loader: Loader):
         super().__init__(__class__.__name__)
         self.data_loader: Loader = data_loader
 
-    def insert(self):
+    def query(self):
         data = self.data_loader.get_data()
         payload = data[0][0]
         return payload
@@ -50,7 +44,7 @@ class hnswsearch(Query):
         pass
 
 class Client:
-    def __init__(self, url: str="https://localhost", port: int=6969):
+    def __init__(self, url: str="https://0.0.0.0", port: int=6969):
         self.h_server_url = url
         self.h_server_port = port
         try:
@@ -58,22 +52,14 @@ class Client:
             socket.create_connection((hostname, port), timeout=5)
             print(f"{GHELIX} Helix instance found at '{hostname}:{port}'")
         except socket.error:
-            raise Exception(f"helix server not available at '{url}:{port}'")
+            raise Exception(f"no helix server found at '{url}:{port}'")
 
     def _construct_full_url(self, endpoint: str) -> str:
         return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
 
-    # GET
-    def query(self, query: Query):
-        pass
-
-    # IDK YET
-    def delete(self):
-        pass
-
-    # POST
-    def insert(self, query: Query) -> bool:
-        data = json.dumps(query.insert()).encode("utf-8")
+    # (they all gonna be POSTS anyway)
+    def query(self, query: Query) -> bool:
+        data = json.dumps(query.query()).encode("utf-8")
         ep = self._construct_full_url(query.endpoint)
         print(f"{GHELIX} sending request to {ep}")
         try:
