@@ -37,7 +37,7 @@ class hnswinsert(Query):
 # sample default
 class hnswsearch(Query):
     def __init__(self, query, k: int=10):
-        super().__init__(__name__)
+        super().__init__(__class__.__name__)
         self.query = query
 
     def query(self):
