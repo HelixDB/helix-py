@@ -34,14 +34,6 @@ class Query(ABC):
 # IDEA: get and set hnsw params with ep
 # server should send an error if theres already data and your trying to set configs
 # otherwise should just return the curr config params
-class hnswconfig(Query):
-    def __init__(self, hnsw_config_path: str):
-        super().__init__()
-        self.hnsw_config_path = hnsw_config_path
-
-    def query(self) -> List[Payload]: pass
-
-    def response(self, response: JSONType): pass
 
 class hnswinsert(Query):
     def __init__(self, vector: List[float]):
@@ -49,22 +41,23 @@ class hnswinsert(Query):
         self.vector = vector
 
     def query(self) -> List[Payload]:
+        print("POOP")
         return [{ "vector": self.vector }]
 
-    def response(self, response: JSONType):
+    def response(self, response: JSONType): # TODO: helix return id of inserted vector
         return None
 
-#class hnswload(Query):
-#    def __init__(self, data_loader: Loader):
-#        super().__init__()
-#        self.data_loader: Loader = data_loader
-#
-#    def query(self) -> List[Payload]:
-#        data = self.data_loader.get_data()[:10]
-#        payload = [{ "vector": vector[0][0] } for vector in data]
-#        return payload
-#
-#    def response(self, response: JSONType): return None
+class hnswload(Query):
+    def __init__(self, data_loader: Loader):
+        super().__init__()
+        self.data_loader: Loader = data_loader
+
+    def query(self) -> List[Payload]:
+        data = self.data_loader.get_data()[:10]
+        payload = [{ "vector": vector[0][0] } for vector in data]
+        return payload
+
+    def response(self, response: JSONType): return None # TODO: helix return ids of inserted vectors
 
 class hnswsearch(Query):
     def __init__(self, query: List[float], k: int=10):
