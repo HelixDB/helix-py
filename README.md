@@ -1,10 +1,8 @@
 ## helix-py
 We're building a python library around Helix-DB to simplify building quick and easy RAG applications
-to run both locally and in the cloud. helix-py is meant to simply the process of feeding your private
-documents into an open source llm to get the best responses for your use case.
-
-The goal is to have a pytorch like front-end to creating your custom queries. These can be both graph
-and vector queries for helix
+to run both locally and in the cloud. The goal is to have a pytorch like front-end to creating your
+custom queries. These can be both graph and vector queries for helix, but will end up being wound into
+a full rag pipeline so you can spin up an llm with your documents in ~5 lines of python.
 
 ### Getting started
 ```bash
