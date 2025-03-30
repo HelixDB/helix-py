@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from enum import Enum
-from typing import Dict, Any
+from typing import Dict, Any, Union, List
 
 GHELIX = "\033[32m[HELIX]\033[0m"
 RHELIX = "\033[31m[HELIX]\033[0m"
@@ -13,8 +13,8 @@ class DataType(Enum):
     CSV = ".csv"
 
 FVec = NDArray[np.float64]
-
 Payload = Dict[str, Any]
+JSONType = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
 
 #class HVector:
 #    def __init__(self, id: str, data: FVec):

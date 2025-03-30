@@ -1,5 +1,5 @@
 from helix.loader import Loader
-from helix.types import GHELIX, RHELIX, Payload
+from helix.types import GHELIX, RHELIX, Payload, JSONType
 import socket
 import json
 import urllib.request
@@ -29,7 +29,7 @@ class Query(ABC):
     def query(self) -> List[Payload]: pass
 
     @abstractmethod
-    def response(self, response: http.client.HTTPResponse) -> Any: pass
+    def response(self, response: JSONType) -> Any: pass
 
 # IDEA: get and set hnsw params with ep
 # server should send an error if theres already data and your trying to set configs
@@ -41,7 +41,7 @@ class hnswconfig(Query):
 
     def query(self) -> List[Payload]: pass
 
-    def response(self, response: http.client.HTTPResponse): pass
+    def response(self, response: JSONType): pass
 
 class hnswinsert(Query):
     def __init__(self, vector: List[float]):
@@ -51,7 +51,7 @@ class hnswinsert(Query):
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
 
-    def response(self, response: http.client.HTTPResponse):
+    def response(self, response: JSONType):
         return None
 
 #class hnswload(Query):
@@ -64,7 +64,7 @@ class hnswinsert(Query):
 #        payload = [{ "vector": vector[0][0] } for vector in data]
 #        return payload
 #
-#    def response(self, response: http.client.HTTPResponse): pass
+#    def response(self, response: JSONType): return None
 
 class hnswsearch(Query):
     def __init__(self, query: List[float], k: int=10):
@@ -75,9 +75,9 @@ class hnswsearch(Query):
     def query(self) -> List[Payload]:
         return [{ "query": self.query, "k": self.k}]
 
-    def response(self, response: http.client.HTTPResponse):
+    def response(self, response: JSONType):
         try:
-            vectors = json.loads(response.read().decode("utf-8")).get("vectors", [])
+            vectors = response.get("vectors", [])
             return np.array(vectors, dtype=np.float64)
         except json.JSONDecodeError:
             print(f"{RHELIX} Failed to parse response as JSON")
@@ -112,7 +112,7 @@ class Client:
 
                 with urllib.request.urlopen(req) as response:
                     if response.getcode() == 200:
-                        return query.response(response)
+                        return query.response(json.loads(response.read().decode("utf-8")))
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
                 print(f"{RHELIX} Query failed: {e}")
                 return None
