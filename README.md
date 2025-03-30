@@ -6,6 +6,12 @@ documents into an open source llm to get the best responses for your use case.
 The goal is to have a pytorch like front-end to creating your custom queries. These can be both graph
 and vector queries for helix
 
+### Getting started
+```bash
+$ pip install -r requierments.txt
+```
+`python -m pip install -e ./helix` for dev or `python -m pip install ./helix` for normal
+
 ### todo/roadmap/ideas
 - goal 1: load up index, search and get vectors, insert vectors, delete vectors
 - goal 2: embedding model pipeline, process docs

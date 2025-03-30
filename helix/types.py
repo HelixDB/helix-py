@@ -20,7 +20,7 @@ class HVector:
         self.length = data.size
 
     def euc_distance(self, other: "HVector") -> float:
-        if self.length != other.length: raise ValueError("Both vectors must have the same length!")
+        if self.length != other.length: raise ValueError("{RHELIX} Both vectors must have the same length!")
         return np.linalg.norm(self.data - other.data)
 
 # TODO: custom exceptions
