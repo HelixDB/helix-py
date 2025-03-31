@@ -2,7 +2,7 @@ from helix.types import DataType, GHELIX, RHELIX
 import os
 from typing import Set, List, Tuple, Any
 import pyarrow.parquet as pq # TODO: custom write
-from tqdm import tqdm # TODO: write custom
+from tqdm import tqdm # TODO: write custom (utils.py maybe)
 
 class Loader:
     def __init__(self, data_path: str, cols: List[str]=None):
@@ -34,7 +34,6 @@ class Loader:
                 raise ValueError(f"{RHELIX} No files found in directory '{data_path}'")
         else:
             raise ValueError(f"{RHELIX} '{data_path}' is not a valid file or directory")
-
 
         found_types: Set[DataType] = set()
         for filename in self.files:

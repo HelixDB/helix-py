@@ -2,8 +2,8 @@
 # debug output on specific env var like DEBUG=1
 
 # TODO: get these corrcet once init version done
-from helix.client import *
-from helix.loader import *
-from helix.rag import *
+#   (don't do import *)
+from helix.client import Client, Query
+from helix.loader import Loader
 
 __version__ = "0.1.0"

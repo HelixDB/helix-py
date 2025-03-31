@@ -5,8 +5,9 @@ custom queries. These can be both graph and vector queries for helix, but will e
 a full rag pipeline so you can spin up an llm with your documents in ~5 lines of python.
 
 ### Getting started
+First install [HelixDB](https://github.com/HelixDB/helix-db). See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) in the repo.
 ```bash
-$ python -m pip install -e . # for dev
+pip install -e . # for dev
 ```
 see `examples/`
 

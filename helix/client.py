@@ -41,7 +41,6 @@ class hnswinsert(Query):
         self.vector = vector
 
     def query(self) -> List[Payload]:
-        print("POOP")
         return [{ "vector": self.vector }]
 
     def response(self, response: JSONType): # TODO: helix return id of inserted vector
