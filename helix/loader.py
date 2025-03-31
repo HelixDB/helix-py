@@ -1,8 +1,9 @@
 from helix.types import DataType, GHELIX, RHELIX
 import os
 from typing import Set, List, Tuple, Any
-import pyarrow.parquet as pq # TODO: custom write
+import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
+import pyarrow.parquet as pq # TODO: custom write
 
 class Loader:
     def __init__(self, data_path: str, cols: List[str]=None):
@@ -58,25 +59,106 @@ class Loader:
             raise ValueError(f"{RHELIX} No Parquet files found in directory '{self.data_path}'")
 
         all_data = []
-        # TODO: tqdm by data point not by file
-        for filename in tqdm(parquet_files, desc=f"{GHELIX} Loading Parquet Files", unit="File"):
+        total_rows = 0
+
+        for filename in parquet_files:
             file_path = os.path.join(self.data_path, filename)
             table = pq.read_table(file_path)
-            cols_to_read = self.cols if self.cols else table.column_names
-            for col in cols_to_read:
-                if col not in table.column_names:
-                    raise ValueError(f"{RHELIX} Column '{col}' not found in file '{filename}'")
-            column_data = [table.column(col).to_pylist() for col in cols_to_read]
-            file_data = list(zip(*column_data))
-            all_data.extend(file_data)
+            total_rows += table.num_rows
+
+        with tqdm(total=total_rows, desc=f"{GHELIX} Loading Parquet Data", unit="rows") as pbar:
+            for filename in parquet_files:
+                file_path = os.path.join(self.data_path, filename)
+                table = pq.read_table(file_path)
+
+                cols_to_read = self.cols if self.cols else table.column_names
+
+                for col in cols_to_read:
+                    if col not in table.column_names:
+                        raise ValueError(f"{RHELIX} Column '{col}' not found in file '{filename}'")
+
+                arrays = []
+                for col in cols_to_read:
+                    col_data = table.column(col).to_numpy()
+                    arrays.append(col_data)
+
+                batch_size = 1_000
+                num_rows = len(arrays[0])
+
+                for batch_start in range(0, num_rows, batch_size):
+                    batch_end = min(batch_start + batch_size, num_rows)
+                    batch_data = []
+
+                    for arr in arrays:
+                        batch_data.append(arr[batch_start:batch_end])
+
+                    batch_tuples = list(zip(*batch_data))
+                    all_data.extend(batch_tuples)
+
+                    pbar.update(batch_end - batch_start)
 
         return all_data
 
+    def _fvecs(self) -> List[Tuple[Any, ...]]:
+        """
+        fvecs_files = [f for f in self.files if f.endswith(".fvecs")]
+        if not fvecs_files:
+            raise ValueError(f"{RHELIX} No FVECS files found in directory '{self.data_path}'")
+
+        all_data = []
+
+        # Process each fvecs file
+        for filename in tqdm(fvecs_files, desc=f"{GHELIX} Loading FVECS Files", unit="File"):
+            file_path = os.path.join(self.data_path, filename)
+            vectors = []
+
+            with open(file_path, 'rb') as f:
+                while True:
+                    try:
+                        # Read vector dimension (first 4 bytes as int32)
+                        dim_bytes = f.read(4)
+                        if not dim_bytes:  # End of file
+                            break
+
+                        dim = np.frombuffer(dim_bytes, dtype=np.int32)[0]
+
+                        # Read vector data (dim * 4 bytes as float32)
+                        vector_bytes = f.read(dim * 4)
+                        if len(vector_bytes) < dim * 4:  # Incomplete vector
+                            print(f"{RHELIX} Warning: Incomplete vector found in '{filename}', skipping")
+                            break
+
+                        vector = np.frombuffer(vector_bytes, dtype=np.float32)
+                        vectors.append(vector)
+
+                    except Exception as e:
+                        print(f"{RHELIX} Error reading vector from '{filename}': {e}")
+                        break
+
+            # If columns are specified, we need to structure the data accordingly
+            if self.cols:
+                if len(self.cols) == 1:
+                    # If only one column is specified, we assume it's for the vector
+                    file_data = [(v,) for v in vectors]
+                else:
+                    # If multiple columns specified but we only have vector data,
+                    # we use None for other columns
+                    file_data = [(v,) + tuple(None for _ in range(len(self.cols) - 1)) for v in vectors]
+            else:
+                # If no columns specified, just return the vectors in single-element tuples
+                file_data = [(v,) for v in vectors]
+
+            all_data.extend(file_data)
+
+        if not all_data:
+            print(f"{RHELIX} Warning: No vectors found in any FVECS files")
+
+        return all_data
+        """
+        pass
+
     def _arrow(self):
         raise NotImplementedError("{RHELIX} Arrow file reading not yet implemented")
-
-    def _fvecs(self):
-        raise NotImplementedError("{RHELIX} FVECS file reading not yet implemented")
 
     def _csv(self):
         raise NotImplementedError("{RHELIX} CSV file reading not yet implemented")
