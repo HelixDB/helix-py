@@ -1,5 +1,5 @@
 from helix.loader import Loader
-from helix.types import GHELIX, RHELIX, Payload, JSONType, FVec
+from helix.types import GHELIX, RHELIX, Payload, JSONType, NP_FVec
 import socket
 import json
 import urllib.request
@@ -7,17 +7,6 @@ import urllib.error
 from typing import List, Optional, Any
 from abc import ABC, abstractmethod
 import numpy as np
-
-"""
-Basically have multiple different query types based on what the input data looks like,
-so instead instead of setting up a bunch of different types of loader, you can just define
-your Query or use pre setup ones and go from there
-
-Parent class for all other Query type objects that will be passed to the Client
-
-each query basically has an insert or query method attached to it which is called when
-passed into Client.query(). that's then called. you write the query or insert methods yourself
-"""
 
 class Query(ABC):
     def __init__(self, endpoint: Optional[str]=None):
@@ -30,12 +19,8 @@ class Query(ABC):
     @abstractmethod
     def response(self, response: JSONType) -> Any: pass
 
-# IDEA: get and set hnsw params with ep
-# server should send an error if theres already data and your trying to set configs
-# otherwise should just return the curr config params
-
 class hnswinsert(Query):
-    def __init__(self, vector: FVec):
+    def __init__(self, vector: NP_FVec):
         super().__init__()
         self.vector = vector.tolist()
 

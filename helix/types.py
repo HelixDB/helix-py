@@ -11,19 +11,10 @@ class DataType(Enum):
     ARROW = ".arrow"
     FVECS = ".fvecs"
     CSV = ".csv"
+    # TODO: probably some custom for when we do custom chunking and such
 
-FVec = NDArray[npfloat64]
+NP_FVec = NDArray[npfloat64]
 Payload = Dict[str, Any]
 JSONType = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
-
-#class HVector:
-#    def __init__(self, id: str, data: FVec):
-#        self.id = id
-#        self.data = data
-#        self.length = data.size
-#
-#    def euc_distance(self, other: "HVector") -> float:
-#        if self.length != other.length: raise ValueError("{RHELIX} Both vectors must have the same length!")
-#        return np.linalg.norm(self.data - other.data)
 
 # TODO: custom exceptions/errors
