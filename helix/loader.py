@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
 import pyarrow.parquet as pq # TODO: custom write
 
-class Loader:
+class Loader: # TODO: will basically be the rag Pipeline
     def __init__(self, data_path: str, cols: List[str]=None):
         self.files: List[str] = None
         self.data_path: str = data_path
@@ -97,7 +97,7 @@ class Loader:
 
                 pbar.update(batch_end - batch_start)
 
-        return all_data
+        return all_data # TODO: only vectors no tuple or double list [[]]
 
     def _fvecs(self) -> List[Tuple[Any, ...]]:
         fvecs_files = [f for f in self.files if f.endswith(".fvecs")]
@@ -156,7 +156,7 @@ class Loader:
         if not all_data:
             print(f"{RHELIX} Warning: No vectors found in any FVECS files")
 
-        return all_data
+        return all_data # TODO: only vectors no tuple or double list [[]]
 
     def _format_vector_batch(self, vectors):
         if self.cols:
@@ -188,3 +188,11 @@ class Loader:
             raise ValueError(f"{RHELIX} No method Found for data type: {self.data_path}")
 
         return method()
+
+class Chunking:
+    def __init__(self):
+        pass
+
+class Embedder:
+    def __init__(self, model: str):
+        self.model = model
