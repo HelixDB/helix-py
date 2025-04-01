@@ -22,12 +22,15 @@ class Query(ABC):
 class hnswinsert(Query):
     def __init__(self, vector: NP_FVec):
         super().__init__()
+        print(vector)
         self.vector = vector.tolist()
 
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
 
-    def response(self, response: JSONType): # TODO: helix return id of inserted vector
+    def response(self, response: JSONType):
+        # TODO: helix return id of inserted vector
+        # TODO: should return an error if not the same dim as all others
         return None
 
 #class hnswload(Query):
@@ -59,6 +62,8 @@ class hnswinsert(Query):
 #            print(f"{RHELIX} Failed to parse response as JSON")
 #            return None
 
+
+# TODO: connect to managed service as well via api key
 class Client:
     def __init__(self, url: str="http://0.0.0.0", port: int=6969):
         self.h_server_url = url

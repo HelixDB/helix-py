@@ -1,5 +1,6 @@
 from helix.types import DataType, GHELIX, RHELIX
 import os
+import csv
 from typing import Set, List, Tuple, Any
 import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
@@ -168,11 +169,120 @@ class Loader: # TODO: will basically be the rag Pipeline
         else:
             return [(v,) for v in vectors]
 
+    def _csv(self):
+        """
+        csv_files = [f for f in self.files if f.endswith(".csv")]
+        if not csv_files:
+            raise ValueError(f"{RHELIX} No CSV files found in directory '{self.data_path}'")
+
+        all_data = []
+        total_rows = 0
+
+        # Process each CSV file
+        for filename in csv_files:
+            file_path = os.path.join(self.data_path, filename)
+
+            # First pass to count lines for tqdm progress bar
+            with open(file_path, 'r', newline='', encoding='utf-8') as f:
+                row_count = sum(1 for _ in f)
+                # Subtract 1 for header if present
+                has_header = True  # Assume header by default
+                data_row_count = row_count - 1 if has_header else row_count
+
+            with open(file_path, 'r', newline='', encoding='utf-8') as f:
+                # Try to detect dialect/delimiter
+                sample = f.read(1024)
+                f.seek(0)
+                dialect = csv.Sniffer().sniff(sample)
+                has_header = csv.Sniffer().has_header(sample)
+
+                # Create CSV reader
+                reader = csv.reader(f, dialect)
+
+                # Read header if present
+                header = next(reader) if has_header else None
+
+                # If columns are specified, find their indices
+                col_indices = None
+                if self.cols and header:
+                    col_indices = []
+                    for col in self.cols:
+                        try:
+                            idx = header.index(col)
+                            col_indices.append(idx)
+                        except ValueError:
+                            raise ValueError(f"{RHELIX} Column '{col}' not found in CSV file '{filename}'")
+
+                # Create a progress bar
+                with tqdm(total=data_row_count, desc=f"{GHELIX} Loading {filename}", unit="rows") as pbar:
+                    rows = []
+
+                    for row in reader:
+                        # If specific columns are requested, extract only those
+                        if col_indices is not None:
+                            row_data = tuple(row[i] for i in col_indices)
+                        else:
+                            row_data = tuple(row)
+
+                        rows.append(row_data)
+                        pbar.update(1)
+                        total_rows += 1
+
+                        # Process in batches to save memory
+                        if len(rows) >= 10000:
+                            # Convert batch to numpy arrays for numeric columns if needed
+                            processed_rows = self._process_csv_batch(rows, header)
+                            all_data.extend(processed_rows)
+                            rows = []  # Clear batch
+
+                    # Process any remaining rows
+                    if rows:
+                        processed_rows = self._process_csv_batch(rows, header)
+                        all_data.extend(processed_rows)
+
+        print(f"{GHELIX} Loaded {total_rows} rows from {len(csv_files)} CSV files")
+
+        if not all_data:
+            print(f"{RHELIX} Warning: No data found in any CSV files")
+
+        return all_data
+    """
+        raise NotImplementedError("{RHELIX} CSV file reading not yet implemented")
+
+    """
+    def _process_csv_batch(self, rows, header=None):
+        import numpy as np
+
+        if not rows:
+            return []
+
+        processed_rows = []
+
+        for row in rows:
+            processed_row = []
+
+            for value in row:
+                if value == "" or value is None:
+                    processed_row.append(None)
+                    continue
+
+                try:
+                    int_val = int(value)
+                    processed_row.append(int_val)
+                except ValueError:
+                    try:
+                        float_val = float(value)
+                        processed_row.append(float_val)
+                    except ValueError:
+                        processed_row.append(value)
+
+            processed_rows.append(tuple(processed_row))
+
+        return processed_rows
+    """
+
     def _arrow(self):
         raise NotImplementedError("{RHELIX} Arrow file reading not yet implemented")
-
-    def _csv(self):
-        raise NotImplementedError("{RHELIX} CSV file reading not yet implemented")
 
     def get_data(self):
         data_type_methods = {
@@ -188,11 +298,3 @@ class Loader: # TODO: will basically be the rag Pipeline
             raise ValueError(f"{RHELIX} No method Found for data type: {self.data_path}")
 
         return method()
-
-class Chunking:
-    def __init__(self):
-        pass
-
-class Embedder:
-    def __init__(self, model: str):
-        self.model = model
