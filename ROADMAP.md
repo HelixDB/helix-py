@@ -58,3 +58,6 @@ class RAGPipeline:
         prompt = f"Query: {user_query}\nContext:\n{' '.join(retrieved_texts)}\nResponse:"
         return self.language_model.generate(prompt)
 ```
+
+- use: `python -c "import importlib.metadata as m; print(f'Total size: {sum([sum(f.locate().stat().st_blocks*512 for f in d.files) for d in m.distributions()]) / 1024 / 1024:.2f} MB')"`
+to see total size of installed packages

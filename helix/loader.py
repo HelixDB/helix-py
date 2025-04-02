@@ -185,33 +185,25 @@ class Loader: # TODO: will basically be the rag Pipeline
             vectors = []
 
             with open(file_path, 'r', encoding='utf-8') as f:
-                # Skip header
                 header = f.readline().strip()
 
-                # Create progress bar
                 pbar = tqdm(desc=f"{GHELIX} Loading {filename}", unit="rows")
 
-                # Process each line
                 for line in f:
                     line = line.strip()
                     if not line:
                         continue
 
-                    # Get the position of the first comma (after the label)
                     first_comma = line.find(',')
                     if first_comma == -1:
                         continue
 
-                    # Get all values after the first comma
                     embedding_str = line[first_comma+1:]
 
-                    # Parse embedding values
                     try:
-                        # Split by commas and convert to float
                         embedding_values = [float(val) for val in embedding_str.split(',') if val.strip()]
                         embedding = np.array(embedding_values, dtype=np.float32)
 
-                        # Add only the embedding vector to the result
                         vectors.append(embedding)
                         pbar.update(1)
                         total_rows += 1
