@@ -54,6 +54,7 @@ class Loader: # TODO: will basically be the rag Pipeline
 
         return found_types.pop()
 
+    # TODO: might not always be numbers
     def _parquet(self) -> List[Tuple[Any, ...]]:
         parquet_files = [f for f in self.files if f.endswith(".parquet")]
         if not parquet_files:
@@ -98,7 +99,7 @@ class Loader: # TODO: will basically be the rag Pipeline
 
                 pbar.update(batch_end - batch_start)
 
-        return all_data # TODO: only vectors no tuple or double list [[]]
+        return all_data # TODO: only vectors no tuple or double list [[]] (can use something like .unsqueze())
 
     def _fvecs(self) -> List[Tuple[Any, ...]]:
         fvecs_files = [f for f in self.files if f.endswith(".fvecs")]
@@ -157,7 +158,7 @@ class Loader: # TODO: will basically be the rag Pipeline
         if not all_data:
             print(f"{RHELIX} Warning: No vectors found in any FVECS files")
 
-        return all_data # TODO: only vectors no tuple or double list [[]]
+        return all_data # TODO: only vectors no tuple or double list [[]] (can use something like .unsqueeze())
 
     def _format_vector_batch(self, vectors):
         if self.cols:
@@ -169,117 +170,62 @@ class Loader: # TODO: will basically be the rag Pipeline
         else:
             return [(v,) for v in vectors]
 
-    def _csv(self):
-        """
+    def _csv(self) -> List[Any]:
+        # TODO: cols isn't checked right now, fully assuming a (label,embedding, ...., embedding end) structure in the csv
+        # TODO: can use pyarrow to speed up
         csv_files = [f for f in self.files if f.endswith(".csv")]
         if not csv_files:
             raise ValueError(f"{RHELIX} No CSV files found in directory '{self.data_path}'")
 
-        all_data = []
+        all_vectors = []
         total_rows = 0
 
-        # Process each CSV file
         for filename in csv_files:
             file_path = os.path.join(self.data_path, filename)
+            vectors = []
 
-            # First pass to count lines for tqdm progress bar
-            with open(file_path, 'r', newline='', encoding='utf-8') as f:
-                row_count = sum(1 for _ in f)
-                # Subtract 1 for header if present
-                has_header = True  # Assume header by default
-                data_row_count = row_count - 1 if has_header else row_count
+            with open(file_path, 'r', encoding='utf-8') as f:
+                # Skip header
+                header = f.readline().strip()
 
-            with open(file_path, 'r', newline='', encoding='utf-8') as f:
-                # Try to detect dialect/delimiter
-                sample = f.read(1024)
-                f.seek(0)
-                dialect = csv.Sniffer().sniff(sample)
-                has_header = csv.Sniffer().has_header(sample)
+                # Create progress bar
+                pbar = tqdm(desc=f"{GHELIX} Loading {filename}", unit="rows")
 
-                # Create CSV reader
-                reader = csv.reader(f, dialect)
+                # Process each line
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
 
-                # Read header if present
-                header = next(reader) if has_header else None
+                    # Get the position of the first comma (after the label)
+                    first_comma = line.find(',')
+                    if first_comma == -1:
+                        continue
 
-                # If columns are specified, find their indices
-                col_indices = None
-                if self.cols and header:
-                    col_indices = []
-                    for col in self.cols:
-                        try:
-                            idx = header.index(col)
-                            col_indices.append(idx)
-                        except ValueError:
-                            raise ValueError(f"{RHELIX} Column '{col}' not found in CSV file '{filename}'")
+                    # Get all values after the first comma
+                    embedding_str = line[first_comma+1:]
 
-                # Create a progress bar
-                with tqdm(total=data_row_count, desc=f"{GHELIX} Loading {filename}", unit="rows") as pbar:
-                    rows = []
+                    # Parse embedding values
+                    try:
+                        # Split by commas and convert to float
+                        embedding_values = [float(val) for val in embedding_str.split(',') if val.strip()]
+                        embedding = np.array(embedding_values, dtype=np.float32)
 
-                    for row in reader:
-                        # If specific columns are requested, extract only those
-                        if col_indices is not None:
-                            row_data = tuple(row[i] for i in col_indices)
-                        else:
-                            row_data = tuple(row)
-
-                        rows.append(row_data)
+                        # Add only the embedding vector to the result
+                        vectors.append(embedding)
                         pbar.update(1)
                         total_rows += 1
+                    except Exception as e:
+                        print(f"{RHELIX} Error parsing row: {e}")
 
-                        # Process in batches to save memory
-                        if len(rows) >= 10000:
-                            # Convert batch to numpy arrays for numeric columns if needed
-                            processed_rows = self._process_csv_batch(rows, header)
-                            all_data.extend(processed_rows)
-                            rows = []  # Clear batch
+                pbar.close()
 
-                    # Process any remaining rows
-                    if rows:
-                        processed_rows = self._process_csv_batch(rows, header)
-                        all_data.extend(processed_rows)
+            all_vectors.extend(vectors)
+            print(f"{GHELIX} Loaded {len(vectors)} vectors from {filename}")
 
-        print(f"{GHELIX} Loaded {total_rows} rows from {len(csv_files)} CSV files")
+        print(f"{GHELIX} Loaded {total_rows} vectors from {len(csv_files)} CSV files")
 
-        if not all_data:
-            print(f"{RHELIX} Warning: No data found in any CSV files")
-
-        return all_data
-    """
-        raise NotImplementedError("{RHELIX} CSV file reading not yet implemented")
-
-    """
-    def _process_csv_batch(self, rows, header=None):
-        import numpy as np
-
-        if not rows:
-            return []
-
-        processed_rows = []
-
-        for row in rows:
-            processed_row = []
-
-            for value in row:
-                if value == "" or value is None:
-                    processed_row.append(None)
-                    continue
-
-                try:
-                    int_val = int(value)
-                    processed_row.append(int_val)
-                except ValueError:
-                    try:
-                        float_val = float(value)
-                        processed_row.append(float_val)
-                    except ValueError:
-                        processed_row.append(value)
-
-            processed_rows.append(tuple(processed_row))
-
-        return processed_rows
-    """
+        return all_vectors
 
     def _arrow(self):
         raise NotImplementedError("{RHELIX} Arrow file reading not yet implemented")

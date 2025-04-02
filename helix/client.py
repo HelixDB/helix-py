@@ -22,8 +22,7 @@ class Query(ABC):
 class hnswinsert(Query):
     def __init__(self, vector: NP_FVec):
         super().__init__()
-        print(vector)
-        self.vector = vector.tolist()
+        self.vector = vector.tolist() if isinstance(vector, np.ndarray) else vector
 
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
@@ -61,7 +60,6 @@ class hnswinsert(Query):
 #        except json.JSONDecodeError:
 #            print(f"{RHELIX} Failed to parse response as JSON")
 #            return None
-
 
 # TODO: connect to managed service as well via api key
 class Client:
