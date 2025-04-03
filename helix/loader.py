@@ -6,8 +6,13 @@ import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
 import pyarrow.parquet as pq # TODO: custom write
 
-class Loader: # TODO: will basically be the rag Pipeline
+class Loader:
     def __init__(self, data_path: str, cols: List[str]=None):
+        # TODO: will basically be the rag Pipeline
+        #   so something like
+        # self.chunker
+        # self.tokenizer
+
         self.files: List[str] = None
         self.data_path: str = data_path
         self.data_type: DataType = self._check_data_type(data_path)
@@ -54,7 +59,14 @@ class Loader: # TODO: will basically be the rag Pipeline
 
         return found_types.pop()
 
+    # TODO: can do without pyarrow as well
+    #from parquet import ParquetFile
+    #pf = ParquetFile('example.parquet')
+    #for row in pf.iter_row_group(): print(row)
+
     # TODO: might not always be numbers
+    #   so generalize to just lists and not numpy yet
+    #   user can make numpy in their custom queries if they want
     def _parquet(self) -> List[Tuple[Any, ...]]:
         parquet_files = [f for f in self.files if f.endswith(".parquet")]
         if not parquet_files:
@@ -236,3 +248,45 @@ class Loader: # TODO: will basically be the rag Pipeline
             raise ValueError(f"{RHELIX} No method Found for data type: {self.data_path}")
 
         return method()
+
+# TODO: probably actually not going to build in the embedder
+#   for now, want just a very basic lib for interfacing with helix-db
+#   as well as some tokenization and chunking abilites, no more than
+#   numpy and pyarrow for now
+
+# TODO: custom write version we need
+#   all AutoTokenizer does is pull the model
+#   all model(**inputs) does is run it through via pytorch
+#   def gonna still need pytorch for some time
+"""
+from transformers import AutoModel, AutoTokenizer
+import torch
+
+class Embedder(ABC):
+    @abstractmethod
+    def embed(self, text: str) -> List[float]: pass
+
+    @abstractmethod
+    def batch_embed(self, texts: List[str]) -> List[List[float]]: pass
+
+# for now default, but can write custom ones
+class EmbeddingModel(Embedder):
+    def __init__(self, model_name: str="bert-base-uncased"):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name)
+        self.model.eval()
+
+    def embed(self, text: str) -> List[float]:
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            cls_embedding = outputs.last_hidden_state[:, 0, :].squeeze(0) # use [CLS] token embedding
+        return cls_embedding.tolist()
+
+    def batch_embed(self, texts: Loader) -> List[List[float]]:
+        inputs = self.tokenizer(texts.get_data(), return_tensors="pt", truncation=True, padding=True, max_length=512)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            cls_embeddings = outputs.last_hidden_state[:, 0, :]
+        return cls_embeddings.tolist()
+"""

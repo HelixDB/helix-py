@@ -32,6 +32,23 @@ class hnswinsert(Query):
         # TODO: should return an error if not the same dim as all others
         return None
 
+#class ragsearch(Query):
+#    def __init__(self, query: List[float], k: int=10):
+#        super().__init__()
+#        self.query = query
+#        self.k = k
+#
+#    def query(self) -> List[Payload]:
+#        return [{ "query": self.query, "k": self.k}]
+#
+#    def response(self, response: JSONType):
+#        try:
+#            vectors = response.get("vectors", [])
+#            return np.array(vectors, dtype=np.float64)
+#        except json.JSONDecodeError:
+#            print(f"{RHELIX} Failed to parse response as JSON")
+#            return None
+
 #class hnswload(Query):
 #    def __init__(self, data_loader: Loader):
 #        super().__init__()

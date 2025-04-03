@@ -1,7 +1,7 @@
 # env vars?
 # debug output on specific env var like DEBUG=1
 
-# TODO: get these corrcet once init version done
+# TODO: get these correct once init version done
 #   (don't do import *)
 from helix.client import Client, Query
 from helix.loader import Loader
