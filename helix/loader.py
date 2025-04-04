@@ -249,6 +249,17 @@ class Loader:
 
         return method()
 
+
+
+#class Chunker:
+#    def __init__(self): pass
+#
+#class Tokenizer:
+#    def __init__(self): pass
+
+
+
+
 # TODO: probably actually not going to build in the embedder
 #   for now, want just a very basic lib for interfacing with helix-db
 #   as well as some tokenization and chunking abilites, no more than
