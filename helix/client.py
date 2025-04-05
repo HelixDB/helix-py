@@ -12,13 +12,12 @@ from tqdm import tqdm
 class Query(ABC):
     def __init__(self, endpoint: Optional[str]=None):
         self.endpoint = endpoint or self.__class__.__name__
-        # TODO: somehow check if endpoint is valid (or just check when trying to send)
 
     @abstractmethod
     def query(self) -> List[Payload]: pass
 
     @abstractmethod
-    def response(self, response: JSONType) -> Any: pass
+    def response(self, response: List[JSONType]) -> Any: pass
 
 class hnswinsert(Query):
     def __init__(self, vector: NP_FVec):
@@ -40,12 +39,12 @@ class hnswload(Query):
         self.batch_size = batch_size
 
     def query(self) -> List[Payload]:
-        data = self.data_loader.get_data()[:3000] # NOTE: tmp
+        data = self.data_loader.get_data()
 
         payloads = []
         for i in range(0, len(data), self.batch_size):
             batch = data[i:i + self.batch_size]
-            payload = { "vectors": [vector[0].tolist() for vector in batch] }
+            payload = { "vectors": [vector.tolist() for vector in batch] }
             payloads.append(payload)
 
         return payloads
@@ -95,7 +94,7 @@ class hnswsearch(Query):
 # TODO: connect to managed service as well via api key
 class Client:
     def __init__(self, local: bool, port: int=80, api_endpoint: str=None):
-        self.h_server_port = 6970 if local else port
+        self.h_server_port = 6969 if local else port
         self.h_server_api_endpoint = None if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
         try:

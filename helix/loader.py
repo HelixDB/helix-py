@@ -1,22 +1,16 @@
 from helix.types import DataType, GHELIX, RHELIX
 import os
 import csv
-from typing import Set, List, Tuple, Any
+from typing import Set, List, Tuple, Any, Optional
 import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
 import pyarrow.parquet as pq # TODO: custom write
 
 class Loader:
-    def __init__(self, data_path: str, cols: List[str]=None):
-        # TODO: will basically be the rag Pipeline
-        #   so something like
-        # self.chunker
-        # self.tokenizer
-
-        self.files: List[str] = None
+    def __init__(self, data_path: str, cols: Optional[List[str]]=None):
         self.data_path: str = data_path
         self.data_type: DataType = self._check_data_type(data_path)
-        self.cols: List[str] = cols
+        self.cols: Optional[List[str]] = cols
         print(f"{GHELIX} Using data_type: '{self.data_type}'")
 
     def _check_data_type(self, data_path: str) -> DataType:
@@ -64,24 +58,14 @@ class Loader:
     #pf = ParquetFile('example.parquet')
     #for row in pf.iter_row_group(): print(row)
 
-    # TODO: might not always be numbers
-    #   so generalize to just lists and not numpy yet
-    #   user can make numpy in their custom queries if they want
-    def _parquet(self) -> List[Tuple[Any, ...]]:
+    def _parquet(self) -> List[Any]:
         parquet_files = [f for f in self.files if f.endswith(".parquet")]
         if not parquet_files:
             raise ValueError(f"{RHELIX} No Parquet files found in directory '{self.data_path}'")
 
         all_data = []
-        total_rows = 0
 
         for filename in parquet_files:
-            file_path = os.path.join(self.data_path, filename)
-            table = pq.read_table(file_path)
-            total_rows += table.num_rows
-
-        for filename in parquet_files:
-            pbar = tqdm(desc=f"{GHELIX} Loading {filename}", unit="vectors")
             file_path = os.path.join(self.data_path, filename)
             table = pq.read_table(file_path)
 
@@ -91,27 +75,25 @@ class Loader:
                 if col not in table.column_names:
                     raise ValueError(f"{RHELIX} Column '{col}' not found in file '{filename}'")
 
-            arrays = []
-            for col in cols_to_read:
-                col_data = table.column(col).to_numpy()
-                arrays.append(col_data)
+            with tqdm(total=table.num_rows, desc=f"{GHELIX} Loading {filename}", unit="vectors") as pbar:
+                arrays = [table.column(col).to_numpy() for col in cols_to_read]
+                num_rows = len(arrays[0])
+                batch_size = 10_000
 
-            batch_size = 10_000
-            num_rows = len(arrays[0])
+                for batch_start in range(0, num_rows, batch_size):
+                    batch_end = min(batch_start + batch_size, num_rows)
 
-            for batch_start in range(0, num_rows, batch_size):
-                batch_end = min(batch_start + batch_size, num_rows)
-                batch_data = []
+                    if len(cols_to_read) == 1:
+                        batch_array = arrays[0][batch_start:batch_end]
+                        batch_tuples = [item for item in batch_array]
+                    else:
+                        batch_data = [arr[batch_start:batch_end] for arr in arrays]
+                        batch_tuples = list(zip(*batch_data))
 
-                for arr in arrays:
-                    batch_data.append(arr[batch_start:batch_end])
+                    all_data.extend(batch_tuples)
+                    pbar.update(batch_end - batch_start)
 
-                batch_tuples = list(zip(*batch_data))
-                all_data.extend(batch_tuples)
-
-                pbar.update(batch_end - batch_start)
-
-        return all_data # TODO: only vectors no tuple or double list [[]] (can use something like .unsqueze())
+        return all_data
 
     def _fvecs(self) -> List[Tuple[Any, ...]]:
         fvecs_files = [f for f in self.files if f.endswith(".fvecs")]
@@ -143,7 +125,7 @@ class Loader:
                             print(f"{RHELIX} Warning: Incomplete vector found in '{filename}', skipping")
                             break
 
-                        vector = np.frombuffer(vector_bytes, dtype=np.float32)
+                        vector = np.frombuffer(vector_bytes)
                         vectors.append(vector)
 
                         pbar.update(1)
@@ -170,19 +152,19 @@ class Loader:
         if not all_data:
             print(f"{RHELIX} Warning: No vectors found in any FVECS files")
 
-        return all_data # TODO: only vectors no tuple or double list [[]] (can use something like .unsqueeze())
+        return all_data
 
     def _format_vector_batch(self, vectors):
         if self.cols:
             # if only one column is specified, we assume it's for the vector
             if len(self.cols) == 1:
-                return [(v,) for v in vectors]
+                return [v for v in vectors]
             else:
-                return [(v,) + tuple(None for _ in range(len(self.cols) - 1)) for v in vectors]
+                return [v + tuple(None for _ in range(len(self.cols) - 1)) for v in vectors]
         else:
-            return [(v,) for v in vectors]
+            return [v for v in vectors]
 
-    def _csv(self) -> List[Any]:
+    def _csv(self) -> List[Tuple[Any, ...]]:
         # TODO: cols isn't checked right now, fully assuming a (label,embedding, ...., embedding end) structure in the csv
         # TODO: can use pyarrow to speed up
         csv_files = [f for f in self.files if f.endswith(".csv")]
@@ -253,51 +235,3 @@ class Loader:
 
 #class Chunker:
 #    def __init__(self): pass
-#
-#class Tokenizer:
-#    def __init__(self): pass
-
-
-
-
-# TODO: probably actually not going to build in the embedder
-#   for now, want just a very basic lib for interfacing with helix-db
-#   as well as some tokenization and chunking abilites, no more than
-#   numpy and pyarrow for now
-
-# TODO: custom write version we need
-#   all AutoTokenizer does is pull the model
-#   all model(**inputs) does is run it through via pytorch
-#   def gonna still need pytorch for some time
-"""
-from transformers import AutoModel, AutoTokenizer
-import torch
-
-class Embedder(ABC):
-    @abstractmethod
-    def embed(self, text: str) -> List[float]: pass
-
-    @abstractmethod
-    def batch_embed(self, texts: List[str]) -> List[List[float]]: pass
-
-# for now default, but can write custom ones
-class EmbeddingModel(Embedder):
-    def __init__(self, model_name: str="bert-base-uncased"):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name)
-        self.model.eval()
-
-    def embed(self, text: str) -> List[float]:
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            cls_embedding = outputs.last_hidden_state[:, 0, :].squeeze(0) # use [CLS] token embedding
-        return cls_embedding.tolist()
-
-    def batch_embed(self, texts: Loader) -> List[List[float]]:
-        inputs = self.tokenizer(texts.get_data(), return_tensors="pt", truncation=True, padding=True, max_length=512)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            cls_embeddings = outputs.last_hidden_state[:, 0, :]
-        return cls_embeddings.tolist()
-"""

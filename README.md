@@ -12,11 +12,11 @@ pip install -e . # for dev
 see `examples/`
 
 ### Roadmap
-- [ ] goal 2: full working default queries
-- [ ] goal 3: working docs to emedding vectors relation to get docs for rag
-- [ ] goal 4: connect with a model downloaded via huggingface lib and have working rag app
-- [ ] goal 5: process docs via chunking, tokenization, and vectorization
-    - possibly use c for chunking and tokenization (for speed)
+- [X] Goal 1: default data loading and http client up and running
+- [ ] Goal 2: full working default queries
+- [ ] Goal 3: working docs to emedding vectors relation to get docs for rag
+- [ ] Goal 4: connect with a model downloaded via huggingface lib and have working rag app
+- [ ] Goal 5: process docs via chunking, tokenization, and vectorization (possibly in c)
 
 ### License
 helix-py is licensed under the GNU General Public License v3.0 (GPL-3.0).
