@@ -230,8 +230,3 @@ class Loader:
             raise ValueError(f"{RHELIX} No method Found for data type: {self.data_path}")
 
         return method()
-
-
-
-#class Chunker:
-#    def __init__(self): pass

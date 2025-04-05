@@ -14,10 +14,12 @@ class Query(ABC):
         self.endpoint = endpoint or self.__class__.__name__
 
     @abstractmethod
-    def query(self) -> List[Payload]: pass
+    def query(self) -> List[Payload]:
+        pass
 
     @abstractmethod
-    def response(self, response: List[JSONType]) -> Any: pass
+    def response(self, response):
+        pass
 
 class hnswinsert(Query):
     def __init__(self, vector: NP_FVec):
@@ -27,7 +29,7 @@ class hnswinsert(Query):
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
 
-    def response(self, response: List[JSONType]):
+    def response(self, response):
         # TODO: helix return id of inserted vector
         # TODO: should return an error if not the same dim as all others
         return None
@@ -49,7 +51,7 @@ class hnswload(Query):
 
         return payloads
 
-    def response(self, response: List[JSONType]):
+    def response(self, response):
         # TODO: should return an error if not the same dim as all others
         # TODO: helix return ids of inserted vectors
         return None
@@ -63,15 +65,13 @@ class hnswsearch(Query):
     def query(self) -> List[Payload]:
         return [{ "query": self.query_vector, "k": self.k}]
 
-    def response(self, response: JSONType):
+    def response(self, response):
         try:
             vectors = response.get("vectors", [])
             return np.array(vectors, dtype=np.float64)
         except json.JSONDecodeError:
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
-
-# TODO: need a count of vecs in db endpoint?
 
 # TODO: will be for search getting docs as well based on search vectors
 #class ragsearch(Query):
@@ -93,9 +93,9 @@ class hnswsearch(Query):
 
 # TODO: connect to managed service as well via api key
 class Client:
-    def __init__(self, local: bool, port: int=80, api_endpoint: str=None):
+    def __init__(self, local: bool, port: int=80, api_endpoint: str=""):
         self.h_server_port = 6969 if local else port
-        self.h_server_api_endpoint = None if local else api_endpoint
+        self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
         try:
             hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
