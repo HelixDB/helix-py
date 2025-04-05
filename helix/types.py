@@ -15,6 +15,6 @@ class DataType(Enum):
 
 NP_FVec = NDArray[npfloat64]
 Payload = Dict[str, Any]
-JSONType = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
+#JSONType = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
 
 # TODO: custom exceptions/errors

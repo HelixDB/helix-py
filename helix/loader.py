@@ -156,7 +156,6 @@ class Loader:
 
     def _format_vector_batch(self, vectors):
         if self.cols:
-            # if only one column is specified, we assume it's for the vector
             if len(self.cols) == 1:
                 return [v for v in vectors]
             else:

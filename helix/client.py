@@ -1,5 +1,5 @@
 from helix.loader import Loader
-from helix.types import GHELIX, RHELIX, Payload, JSONType, NP_FVec
+from helix.types import GHELIX, RHELIX, Payload, NP_FVec
 import socket
 import json
 import urllib.request
@@ -29,9 +29,7 @@ class hnswinsert(Query):
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
 
-    def response(self, response):
-        # TODO: helix return id of inserted vector
-        # TODO: should return an error if not the same dim as all others
+    def response(self, response) -> Any:
         return None
 
 class hnswload(Query):
@@ -42,6 +40,7 @@ class hnswload(Query):
 
     def query(self) -> List[Payload]:
         data = self.data_loader.get_data()
+        data = data[:4000]
 
         payloads = []
         for i in range(0, len(data), self.batch_size):
@@ -51,10 +50,8 @@ class hnswload(Query):
 
         return payloads
 
-    def response(self, response):
-        # TODO: should return an error if not the same dim as all others
-        # TODO: helix return ids of inserted vectors
-        return None
+    def response(self, response) -> Any:
+        return response.get("res")
 
 class hnswsearch(Query):
     def __init__(self, query_vector: List[float], k: int=5):
@@ -63,12 +60,12 @@ class hnswsearch(Query):
         self.k = k
 
     def query(self) -> List[Payload]:
-        return [{ "query": self.query_vector, "k": self.k}]
+        return [{ "query": self.query_vector, "k": self.k }]
 
-    def response(self, response):
+    def response(self, response) -> Any:
         try:
-            vectors = response.get("vectors", [])
-            return np.array(vectors, dtype=np.float64)
+            vectors = response.get("res")
+            return [(vector["id"], np.array(vector["data"], dtype=np.float64)) for vector in vectors]
         except json.JSONDecodeError:
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
@@ -110,7 +107,7 @@ class Client:
     def query(self, query: Query) -> List[Any]:
         query_data = query.query()
         ep = self._construct_full_url(query.endpoint)
-        total = len(query_data) if hasattr(query_data, '__len__') else None
+        total = len(query_data) if hasattr(query_data, "__len__") else None
         responses = []
 
         for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'"):

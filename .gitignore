@@ -1,6 +1,5 @@
 data/
 venv/
 __pycache__/
-db/
 helix_py.egg-info/
-queries/
+helixdb-queries/
