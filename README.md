@@ -41,7 +41,8 @@ git clone https://github.com/HelixDB/helix-py
 cd helix-py
 python3 -m pip install -e . # use a venv if needed
 ```
-See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) to install helix-db
+See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) for more
+information on installing helix-db
 ```bash
 curl -sSL "https://install.helix-db.com" | bash
 helix install
@@ -69,9 +70,8 @@ nearest = db.query(hnswsearch(my_query)) # query hnsw index
 ## Roadmap
 - [X] Goal 1: default data loading and http client up and running
 - [X] Goal 2: full working default queries
-- [ ] Goal 3: working docs to emedding vectors relation to get docs for rag
-- [ ] Goal 4: connect with a model downloaded via huggingface lib and have working rag app
-- [ ] Goal 5: process docs via chunking, tokenization, and vectorization (possibly in c)
+- [ ] Goal 3: working rag pipline with default queries and workflow
+- [ ] Goal 4: processing, chunking, tokenizing, vectorising data
 
 ## License
 helix-py is licensed under the GNU General Public License v3.0 (GPL-3.0).
