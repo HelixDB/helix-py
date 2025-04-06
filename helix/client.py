@@ -12,23 +12,19 @@ from tqdm import tqdm
 class Query(ABC):
     def __init__(self, endpoint: Optional[str]=None):
         self.endpoint = endpoint or self.__class__.__name__
-
     @abstractmethod
     def query(self) -> List[Payload]:
         pass
-
     @abstractmethod
     def response(self, response):
         pass
 
 class hnswinsert(Query):
-    def __init__(self, vector: NP_FVec):
+    def __init__(self, vector):
         super().__init__()
         self.vector = vector.tolist() if isinstance(vector, np.ndarray) else vector
-
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
-
     def response(self, response) -> Any:
         return None
 
@@ -37,7 +33,6 @@ class hnswload(Query):
         super().__init__()
         self.data_loader: Loader = data_loader
         self.batch_size = batch_size
-
     def query(self) -> List[Payload]:
         data = self.data_loader.get_data()
         data = data[:4000]
@@ -49,7 +44,6 @@ class hnswload(Query):
             payloads.append(payload)
 
         return payloads
-
     def response(self, response) -> Any:
         return response.get("res")
 
@@ -58,10 +52,8 @@ class hnswsearch(Query):
         super().__init__()
         self.query_vector = query_vector
         self.k = k
-
     def query(self) -> List[Payload]:
         return [{ "query": self.query_vector, "k": self.k }]
-
     def response(self, response) -> Any:
         try:
             vectors = response.get("res")
@@ -76,10 +68,8 @@ class hnswsearch(Query):
 #        super().__init__()
 #        self.query = query
 #        self.k = k
-#
 #    def query(self) -> List[Payload]:
 #        return [{ "query": self.query, "k": self.k}]
-#
 #    def response(self, response: JSONType):
 #        try:
 #            vectors = response.get("vectors", [])

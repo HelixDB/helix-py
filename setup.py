@@ -4,5 +4,5 @@ setup(
     name="helix-py",
     version="0.1",
     packages=find_packages(),
-    install_requires=["numpy", "pyarrow", "tqdm", "torch", "transformers"],
+    install_requires=["numpy", "pyarrow", "tqdm"],
 )
