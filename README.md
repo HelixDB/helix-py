@@ -49,7 +49,7 @@ helix install
 helix init
 helix deploy --local
 ```
-Now you're good to go and starting using helix-py! See `examples/` for how to use helix-py. See
+Now you're good to go! See `examples/` for how to use helix-py. See
 `helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
 and write corresponding `Query` classes in your python script.
 
