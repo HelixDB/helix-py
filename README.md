@@ -54,7 +54,7 @@ Now you're good to go! See `examples/` for how to use helix-py. See
 and write corresponding `Query` classes in your python script.
 
 ## Documentation
-Proper docs are coming soon. For now:
+Proper docs are coming soon. See `examples/tutorial.py` for now.
 ```python
 import helix
 from helix.client import hnswload, hnswsearch
