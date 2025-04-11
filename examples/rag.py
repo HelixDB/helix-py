@@ -35,3 +35,12 @@ if __name__ == "__main__":
 
     print("Prompt:", prompt)
     print("Response:", response)
+
+# TODO:
+# - chunk input document
+# - vectorize input text
+# - db.query load all the chunked+vectorized texts + input document
+# - run local llm
+# - on llm prompt, have llm split it up first, then search db, then put doc
+#   from search into new prompt then prompt llm and it gives answer based
+#   on searched thing

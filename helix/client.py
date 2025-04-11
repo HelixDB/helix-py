@@ -79,6 +79,9 @@ class hnswsearch(Query):
 #            return None
 
 # TODO: connect to managed service as well via api key
+# TODO: have the server spin-up automatically when running or
+#   have it running already before starting script
+#   maybe try a .init to start from python script
 class Client:
     def __init__(self, local: bool, port: int=80, api_endpoint: str=""):
         self.h_server_port = 6969 if local else port
