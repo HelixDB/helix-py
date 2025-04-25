@@ -1,108 +1,133 @@
-# Load all docs into helix
-# - chunk input document
-# - vectorize input text
-# - db.query load all the chunked+vectorized texts + input document
-
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from sentence_transformers import SentenceTransformer
-import numpy as np
+import re
 
-def fetch_rust_docs(urls):
-    """Fetch and extract text from Rust documentation pages."""
-    documents = []
-    for url in urls:
-        response = requests.get(url)
-        if response.status_code != 200:
-            print(f"Failed to fetch {url}")
-            continue
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Extract text from paragraphs
-        paragraphs = soup.find_all('p')
-        text = " ".join(p.get_text().strip() for p in paragraphs if p.get_text().strip())
-        if text:
-            documents.append(text)
-    return documents
+def setup_driver():
+    """Set up Selenium WebDriver with Chrome in headless mode."""
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-def chunk_text(text, max_length=500):
-    """Split text into chunks of approximately max_length characters."""
-    words = text.split()
-    chunks = []
-    current_chunk = []
-    current_length = 0
-
-    for word in words:
-        current_length += len(word) + 1
-        if current_length > max_length:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = [word]
-            current_length = len(word) + 1
-        else:
-            current_chunk.append(word)
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
-    return chunks
-
-def ingest_documents(documents, model, db_url="http://localhost:6969/insertdoc"):
-    """Chunk documents, generate embeddings, and insert into database."""
-    for doc in documents:
-        chunks = chunk_text(doc)
-        if not chunks:
-            continue
-        embeddings = model.encode(chunks, convert_to_numpy=True)
-        for chunk, embedding in zip(chunks, embeddings):
-            payload = {
-                "text": chunk,
-                "embedding": embedding.tolist()
-            }
-            try:
-                response = requests.post(db_url, json=payload)
-                if response.status_code != 200:
-                    print(f"Failed to insert chunk: {response.text}")
-                else:
-                    print(f"Inserted chunk: {chunk[:50]}...")
-            except requests.RequestException as e:
-                print(f"Error inserting chunk: {e}")
-
-def verify_insertion(model, query, db_url="http://localhost:6969/searchdoc"):
-    """Verify database insertion by querying with a sample query."""
-    query_embedding = model.encode([query], convert_to_numpy=True)[0]
-    payload = {"embedding": query_embedding.tolist()}
     try:
-        response = requests.post(db_url, json=payload)
-        if response.status_code == 200:
-            docs = response.json()
-            print(f"Sample query results: {docs}")
+        from webdriver_manager.chrome import ChromeDriverManager
+        return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    except ImportError:
+        return webdriver.Chrome(options=options) # Assumes chromedriver is in PATH
+
+def fetch_page(driver, url, selector="body"):
+    """Fetch a webpage and return its BeautifulSoup object."""
+    try:
+        driver.get(url)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+        )
+        return BeautifulSoup(driver.page_source, "html.parser")
+    except Exception as e:
+        print(f"Error fetching {url}: {e}")
+        return None
+
+def get_chapter_links(soup, base_url="https://doc.rust-lang.org/book/"):
+    """Extract chapter links and titles from the TOC."""
+    chapters = soup.select("nav.sidebar a.chapter, ul.chapter a")
+    if not chapters:
+        sidebar = soup.find("nav", class_="sidebar") or soup.find("div", class_="sidebar")
+        if sidebar:
+            chapters = sidebar.find_all("a")
+
+    chapter_info = []
+    for chapter in chapters:
+        title = chapter.get_text().strip()
+        href = chapter.get("href", "")
+        if title and not title.lower().startswith(("table of contents", "foreword", "introduction")):
+            # Construct full URL if href is relative
+            full_url = base_url + href if href.startswith("ch") else href
+            chapter_info.append({"title": title, "url": full_url})
+
+    return chapter_info
+
+def extract_chapter_content(soup):
+    """Extract the main content of a chapter, excluding headers, footers, and navigation."""
+    # Target the main content area (mdBook typically uses <main> or <div class="content">)
+    main_content = soup.find("main") or soup.find("div", class_="content")
+    if not main_content:
+        return ""
+
+    # Extract text from paragraphs, code blocks, and other relevant elements
+    content_elements = main_content.find_all(["p", "pre", "li", "h2", "h3"])
+    content_parts = []
+
+    for element in content_elements:
+        text = element.get_text().strip()
+        if text and not element.find_parent("nav"):  # Exclude navigation elements
+            content_parts.append(text)
+
+    # Join content and clean up excessive whitespace
+    content = " ".join(content_parts)
+    content = re.sub(r'\s+', ' ', content).strip()
+    return content
+
+def process_chapters(driver, chapter_info):
+    """Process each chapter to extract its content."""
+    all_contents = []
+    chapter_contents_list = []
+
+    for i, chapter in enumerate(chapter_info, 1):
+        print(f"Fetching content for chapter {i}: {chapter['title']}...")
+        soup = fetch_page(driver, chapter["url"], "main, div.content")
+        if soup:
+            content = extract_chapter_content(soup)
+            if content:
+                chapter_contents_list.append(content)
+                all_contents.append(content)
+            else:
+                print(f"No content extracted for {chapter['title']}.")
         else:
-            print(f"Verification failed: {response.text}")
-    except requests.RequestException as e:
-        print(f"Verification error: {e}")
+            print(f"Failed to load page for {chapter['title']}.")
+
+    return " ".join(all_contents), chapter_contents_list
 
 def main():
-    # Initialize BERT model
-    bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+    url = "https://doc.rust-lang.org/book/"
+    driver = setup_driver()
 
-    # Define Rust documentation URLs (example pages from The Rust Book)
-    rust_doc_urls = [
-        "https://doc.rust-lang.org/book/ch01-01-installation.html",
-        "https://doc.rust-lang.org/book/ch01-02-hello-world.html"
-    ]
+    try:
+        # Fetch the main page
+        soup = fetch_page(driver, url, "nav.sidebar, ul.chapter")
+        if not soup:
+            print("Failed to load the main page.")
+            return
 
-    # Step 1: Fetch Rust documentation
-    print("Fetching Rust documentation...")
-    documents = fetch_rust_docs(rust_doc_urls)
-    if not documents:
-        print("No documents fetched. Exiting.")
-        return
+        # Get chapter links
+        chapter_info = get_chapter_links(soup)
+        if not chapter_info:
+            print("Could not find any chapter links.")
+            print("Debugging info: Printing first 500 characters of parsed HTML...")
+            print(str(soup)[:500])
+            return
 
-    # Step 2 & 3 & 4: Chunk, vectorize, and insert
-    print("Ingesting documents into database...")
-    ingest_documents(documents, bert_model)
+        # Process chapters to get contents
+        all_contents_string, chapter_contents_list = process_chapters(driver, chapter_info)
 
-    # Step 5: Verify insertion
-    print("Verifying database insertion...")
-    sample_query = "What is Rust programming?"
-    verify_insertion(bert_model, sample_query)
+        if chapter_contents_list:
+            # Output results
+            print("\nSingle string of all chapter contents (truncated to 500 characters):")
+            print(all_contents_string[:500] + "..." if len(all_contents_string) > 500 else all_contents_string)
+            print("\nList of individual chapter contents:")
+            for i, content in enumerate(chapter_contents_list, 1):
+                print(f"\nChapter {i} (truncated to 200 characters):")
+                print(content[:200] + "..." if len(content) > 200 else content)
+        else:
+            print("No chapter contents extracted.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        driver.quit()
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-# note: first run examples/rag_demo/load_docs.py
+# note: first run python examples/rag_demo/load_docs.py
 import helix
 from helix.client import ragfetch
 import requests
