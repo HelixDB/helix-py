@@ -4,7 +4,7 @@ import socket
 import json
 import urllib.request
 import urllib.error
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Tuple
 from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import tqdm
@@ -12,19 +12,21 @@ from tqdm import tqdm
 class Query(ABC):
     def __init__(self, endpoint: Optional[str]=None):
         self.endpoint = endpoint or self.__class__.__name__
+
     @abstractmethod
-    def query(self) -> List[Payload]:
-        pass
+    def query(self) -> List[Payload]: pass
+
     @abstractmethod
-    def response(self, response):
-        pass
+    def response(self, response): pass
 
 class hnswinsert(Query):
     def __init__(self, vector):
         super().__init__()
         self.vector = vector.tolist() if isinstance(vector, np.ndarray) else vector
+
     def query(self) -> List[Payload]:
         return [{ "vector": self.vector }]
+
     def response(self, response) -> Any:
         return None
 
@@ -33,6 +35,7 @@ class hnswload(Query):
         super().__init__()
         self.data_loader: Loader = data_loader
         self.batch_size = batch_size
+
     def query(self) -> List[Payload]:
         data = self.data_loader.get_data()
         data = data[:4000]
@@ -44,6 +47,7 @@ class hnswload(Query):
             payloads.append(payload)
 
         return payloads
+
     def response(self, response) -> Any:
         return response.get("res")
 
@@ -52,8 +56,10 @@ class hnswsearch(Query):
         super().__init__()
         self.query_vector = query_vector
         self.k = k
+
     def query(self) -> List[Payload]:
         return [{ "query": self.query_vector, "k": self.k }]
+
     def response(self, response) -> Any:
         try:
             vectors = response.get("res")
@@ -62,21 +68,35 @@ class hnswsearch(Query):
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
 
-# TODO: will be for search getting docs as well based on search vectors
-#class ragsearch(Query):
-#    def __init__(self, query: List[float], k: int=10):
-#        super().__init__()
-#        self.query = query
-#        self.k = k
-#    def query(self) -> List[Payload]:
-#        return [{ "query": self.query, "k": self.k}]
-#    def response(self, response: JSONType):
-#        try:
-#            vectors = response.get("vectors", [])
-#            return np.array(vectors, dtype=np.float64)
-#        except json.JSONDecodeError:
-#            print(f"{RHELIX} Failed to parse response as JSON")
-#            return None
+class ragfetch(Query):
+    def __init__(self, query_vector: List[float]):
+        super().__init__()
+        self.query_vector = query_vector
+
+    def query(self) -> List[Payload]:
+        return [{ "query": self.query_vector }]
+
+    def response(self, response) -> Any:
+        try:
+            doc = response.get("doc", [])
+            return doc
+        except json.JSONDecodeError:
+            print(f"{RHELIX} Failed to parse response as JSON")
+            return None
+
+class ragload(Query):
+    def __init__(self, docs_vecs: List[Tuple[str, List[List[float]]]]):
+        super().__init__()
+        self.docs_vecs = docs_vecs
+
+    def query(self) -> List[Payload]:
+        payloads = []
+        for (doc, vecs) in self.docs_vecs:
+            payloads.append({ "doc": doc, "vecs": vecs })
+        return payloads
+
+    def response(self, response):
+        return response.get("res")
 
 # TODO: connect to managed service as well via api key
 # TODO: have the server spin-up automatically when running or
