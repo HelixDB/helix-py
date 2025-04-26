@@ -1,9 +1,13 @@
 # note: first run python examples/rag_demo/load_docs.py
 import helix
 from helix.client import ragsearchdoc
+
 import requests
-from transformers import BertTokenizer, BertModel
 import torch
+import sys
+from transformers import BertTokenizer, BertModel
+
+sys.stdout.flush()
 
 db = helix.Client(local=True)
 
@@ -14,7 +18,7 @@ OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 def get_ollama_response(prompt):
     payload = {
-        "model": "llama3.2:3b",
+        "model": "llama3.2:1b",
         "prompt": prompt,
         "stream": False
     }
@@ -25,11 +29,9 @@ def get_ollama_response(prompt):
         raise Exception(f"Ollama API request failed with status {response.status_code}")
 
 def vectorize_prompt(prompt):
-    """Convert prompt to BERT embedding."""
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
-        # Use the [CLS] token embedding as the prompt representation
         embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
     return embedding
 
