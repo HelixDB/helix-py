@@ -38,7 +38,7 @@ class hnswload(Query):
 
     def query(self) -> List[Payload]:
         data = self.data_loader.get_data()
-        data = data[:4000]
+        #data = data[:4000] # TODO: don't leave in
 
         payloads = []
         for i in range(0, len(data), self.batch_size):
@@ -68,7 +68,19 @@ class hnswsearch(Query):
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
 
-class ragfetch(Query):
+class ragloaddoc(Query):
+    def __init__(self, doc: str, vec: List[float]):
+        super().__init__()
+        self.doc = doc
+        self.vec = vec
+
+    def query(self) -> List[Payload]:
+        return [{ "doc": self.doc, "vec": self.vec }]
+
+    def response(self, response):
+        return response.get("res")
+
+class ragsearchdoc(Query):
     def __init__(self, query_vector: List[float]):
         super().__init__()
         self.query_vector = query_vector
@@ -77,26 +89,13 @@ class ragfetch(Query):
         return [{ "query": self.query_vector }]
 
     def response(self, response) -> Any:
-        try:
-            doc = response.get("doc", [])
-            return doc
-        except json.JSONDecodeError:
-            print(f"{RHELIX} Failed to parse response as JSON")
-            return None
-
-class ragload(Query):
-    def __init__(self, docs_vecs: List[Tuple[str, List[List[float]]]]):
-        super().__init__()
-        self.docs_vecs = docs_vecs
-
-    def query(self) -> List[Payload]:
-        payloads = []
-        for (doc, vecs) in self.docs_vecs:
-            payloads.append({ "doc": doc, "vecs": vecs })
-        return payloads
-
-    def response(self, response):
         return response.get("res")
+        #try:
+        #    doc = response.get("doc", [])
+        #    return doc
+        #except json.JSONDecodeError:
+        #    print(f"{RHELIX} Failed to parse response as JSON")
+        #    return None
 
 # TODO: connect to managed service as well via api key
 # TODO: have the server spin-up automatically when running or

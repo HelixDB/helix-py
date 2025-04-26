@@ -1,6 +1,6 @@
 # note: first run python examples/rag_demo/load_docs.py
 import helix
-from helix.client import ragfetch
+from helix.client import ragsearchdoc
 import requests
 from transformers import BertTokenizer, BertModel
 import torch
@@ -45,7 +45,7 @@ def prompt_loop():
 
         vectorized_prompt = vectorize_prompt(reformatted_query)
 
-        doc = db.query(ragfetch(vectorized_prompt))
+        doc = db.query(ragsearchdoc(vectorized_prompt))
         print(f"\nRetrieved Document: {doc[:200]}...")
 
         response_prompt = f"Based on the following documentation, answer the question: {user_prompt}\n\nDocumentation: {doc}"
