@@ -186,19 +186,16 @@ def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, Li
     return ret
 
 if __name__ == "__main__":
-    chapters = fetch_rust_book_chapters()
-    processed = process_to_vectorized(chapters) # chapters[:15]
-    # probably don't need to put chunks in properties for now tho
-    for doc, chunks, vecs in processed:
-        print(f"doc len: {len(doc)}\n# chunks: {len(vecs)}")
-        print(f"sample: {doc}, {vecs[0]}")
+    #chapters = fetch_rust_book_chapters()
+    #processed = process_to_vectorized(chapters) # chapters[:15]
+    ## probably don't need to put chunks in properties for now tho
+    #for doc, chunks, vecs in processed:
+    #    print(f"doc len: {len(doc)}\n# chunks: {len(vecs)}")
+    #    print(f"sample: {doc}, {vecs[0]}")
 
-    #for i, (title, content) in enumerate(chapters, 1):
-    #    print(f"\nChapter {i}: {title} (content truncated to 200 characters)")
-    #    print(content[:200] + "..." if len(content) > 200 else content)
+    db = helix.Client(local=True)
 
-    #db = helix.Client(local=True)
-    #db.query(ragloaddoc("POOOOOOOP", [1, 1, 1, 1, 1]))
+    db.query(ragloaddoc("POOOOOOOP", [1, 1, 1, 1, 1]))
 
     #res = db.query(ragsearchdoc([1, 1, 1, 1, 1]))
     #print(res)

@@ -11,6 +11,7 @@ class DataType(Enum):
     ARROW = ".arrow"
     FVECS = ".fvecs"
     CSV = ".csv"
+    # TODO: TXT = ".txt"
     # TODO: probably some custom for when we do custom chunking and such
 
 NP_FVec = NDArray[npfloat64]

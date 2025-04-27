@@ -6,6 +6,9 @@ import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)
 import pyarrow.parquet as pq # TODO: custom write
 
+# TODO: split between floating point data and text data
+#   - start simple with some file types being only floats
+#   and some only text (plain .txt for now)
 class Loader:
     def __init__(self, data_path: str, cols: Optional[List[str]]=None):
         self.data_path: str = data_path

@@ -28,7 +28,7 @@ class hnswinsert(Query):
         return [{ "vector": self.vector }]
 
     def response(self, response) -> Any:
-        return None
+        return response.get("res") # TODO: id of inserted vector
 
 class hnswload(Query):
     def __init__(self, data_loader: Loader, batch_size: int=600):
@@ -38,7 +38,6 @@ class hnswload(Query):
 
     def query(self) -> List[Payload]:
         data = self.data_loader.get_data()
-        #data = data[:4000] # TODO: don't leave in
 
         payloads = []
         for i in range(0, len(data), self.batch_size):
@@ -49,7 +48,7 @@ class hnswload(Query):
         return payloads
 
     def response(self, response) -> Any:
-        return response.get("res")
+        return response.get("res") # TODO: list of ids of inserted vectors
 
 class hnswsearch(Query):
     def __init__(self, query_vector: List[float], k: int=5):
@@ -129,7 +128,7 @@ class Client:
                     ep,
                     data=req_data,
                     headers={"Content-Type": "application/json"},
-                    method='POST',
+                    method="POST",
                 )
 
                 with urllib.request.urlopen(req) as response:

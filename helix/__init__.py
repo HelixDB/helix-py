@@ -5,7 +5,9 @@
 
 # TODO: get these correct once init version done
 #   (don't do import *)
+
 from helix.client import Client, Query
 from helix.loader import Loader
+from helix.chunker import chunker
 
 __version__ = "0.1.0"
