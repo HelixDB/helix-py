@@ -67,20 +67,23 @@ class hnswsearch(Query):
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
 
-class ragloaddoc(Query):
-    def __init__(self, doc: str, vec: List[float]):
+class ragloaddocs(Query):
+    def __init__(self, docs: List[Tuple[str, List[List[float]]]]):
         super().__init__()
-        self.doc = doc
-        self.vec = vec
+        self.docs = docs
 
-    def query(self) -> List[Payload]:
-        return [{ "doc": self.doc, "vec": self.vec }]
+    def query(self) -> List[Payload]: # TODO: batch send
+        docs_payload = []
+        for doc, vecs in self.docs:
+            docs_payload.append({ "doc": doc, "vecs": vecs })
+
+        return [{ "docs": docs_payload }]
 
     def response(self, response):
         return response.get("res")
 
 class ragsearchdoc(Query):
-    def __init__(self, query_vector: List[float]):
+    def __init__(self, query_vector: List[float]): # TODO: temp format for now
         super().__init__()
         self.query_vector = query_vector
 
@@ -88,7 +91,7 @@ class ragsearchdoc(Query):
         return [{ "query": self.query_vector }]
 
     def response(self, response) -> Any:
-        return response.get("res")
+        return response
         #try:
         #    doc = response.get("doc", [])
         #    return doc
@@ -123,6 +126,7 @@ class Client:
 
         for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'"):
             req_data = json.dumps(d).encode("utf-8")
+            print(req_data)
             try:
                 req = urllib.request.Request(
                     ep,

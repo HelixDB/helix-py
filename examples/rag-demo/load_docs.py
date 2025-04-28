@@ -1,5 +1,5 @@
 import helix
-from helix.client import ragloaddoc, ragsearchdoc
+from helix.client import ragloaddocs, ragsearchdoc
 from typing import Tuple, List, Any
 
 # idk why I needed this but works better
@@ -61,7 +61,7 @@ def get_chapter_links(soup, base_url="https://doc.rust-lang.org/book/"):
         sidebar = soup.find("nav", class_="sidebar") or soup.find("div", class_="sidebar")
         if sidebar:
             chapters = sidebar.find_all("a")
-    
+
     chapter_info = []
     for chapter in chapters:
         title = chapter.get_text().strip()
@@ -70,29 +70,29 @@ def get_chapter_links(soup, base_url="https://doc.rust-lang.org/book/"):
             # Use urljoin to handle relative and absolute URLs correctly
             full_url = urljoin(base_url, href)
             chapter_info.append({"title": title, "url": full_url})
-    
+
     return chapter_info
 
 def extract_chapter_content(soup):
     main_content = soup.find("main") or soup.find("div", class_="content")
     if not main_content:
         return ""
-    
+
     content_elements = main_content.find_all(["p", "pre", "li", "h2", "h3"])
     content_parts = []
-    
+
     for element in content_elements:
         text = element.get_text().strip()
         if text and not element.find_parent("nav"):
             content_parts.append(text)
-    
+
     content = " ".join(content_parts)
     content = re.sub(r'\s+', ' ', content).strip()
     return content
 
 def process_chapters(driver, chapter_info):
     chapter_data = []
-    
+
     for i, chapter in enumerate(chapter_info, 1):
         print(f"Fetching content for chapter {i}: {chapter['title']}...")
         soup = fetch_page(driver, chapter["url"], "main, div.content")
@@ -104,7 +104,7 @@ def process_chapters(driver, chapter_info):
                 print(f"No content extracted for {chapter['title']}.")
         else:
             print(f"Failed to load page for {chapter['title']}.")
-    
+
     return chapter_data
 
 def fetch_rust_book_chapters() -> List[Any]:
@@ -140,17 +140,17 @@ def fetch_rust_book_chapters() -> List[Any]:
 def chunk_content(text: str, chunk_size: int=200) -> List[str]:
     # chunk size in words
     text = ' '.join(text.split()).strip()
-    
+
     sentences = [s.strip() for s in text.split('.') if s.strip()]
     sentences = [s + '.' for s in sentences]
-    
+
     chunks = []
     current_chunk = ""
     current_word_count = 0
-    
+
     for sentence in sentences:
         sentence_word_count = len(sentence.split())
-        
+
         if current_word_count + sentence_word_count > chunk_size:
             if current_chunk:  # Only append non-empty chunks
                 chunks.append(current_chunk.strip())
@@ -159,10 +159,10 @@ def chunk_content(text: str, chunk_size: int=200) -> List[str]:
         else:
             current_chunk += sentence
             current_word_count += sentence_word_count
-    
+
     if current_chunk:
         chunks.append(current_chunk.strip())
-    
+
     return chunks
 
 def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
     db = helix.Client(local=True)
 
-    db.query(ragloaddoc("POOOOOOOP", [1, 1, 1, 1, 1]))
+    db.query(ragloaddocs([("POOOOOOOP", [[1, 1, 1, 1, 1]])]))
 
-    #res = db.query(ragsearchdoc([1, 1, 1, 1, 1]))
-    #print(res)
+    res = db.query(ragsearchdoc([1, 1, 1, 1, 1]))
+    print(res)
