@@ -139,7 +139,6 @@ class Client:
 
         for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'"):
             req_data = json.dumps(d).encode("utf-8")
-            #print(req_data)
             try:
                 req = urllib.request.Request(
                     ep,

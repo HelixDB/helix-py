@@ -32,7 +32,7 @@ def vectorize_prompt(prompt):
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
-        embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
+        embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
     return embedding
 
 def prompt_loop():

@@ -174,32 +174,33 @@ def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
         inputs = tokenizer(chunk, return_tensors="pt", truncation=True, padding=True, max_length=512)
         with torch.no_grad():
             outputs = model(**inputs)
-            embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
+            embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
             vectorized.append(embedding)
     return vectorized
 
-def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, List[str], List[List[float]]]]:
+def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, List[List[float]]]]:
     ret = []
     for title, content in tqdm(chapters, desc="processing chapters"):
         chunked = chunk_content(content)
         vectorized = vectorize_chunked(chunked)
-        ret.append((content, chunked, vectorized))
+        ret.append((content, vectorized)) # add chunked as well for properties
     return ret
 
 if __name__ == "__main__":
-    #chapters = fetch_rust_book_chapters()
-    #processed = process_to_vectorized(chapters) # chapters[:15]
-    ## probably don't need to put chunks in properties for now tho
-    #for doc, chunks, vecs in processed:
-    #    print(f"doc len: {len(doc)}\n# chunks: {len(vecs)}")
-    #    print(f"sample: {doc}, {vecs[0]}")
-
     db = helix.Client(local=True)
 
-    db.query(ragtestload("PEEEEE", [2, 2, 2, 2, 2]))
-    res = db.query(ragsearchdoc([3, 3, 3, 3, 3]))
-    print(res)
+    chapters = fetch_rust_book_chapters()
+    processed = process_to_vectorized(chapters[:40])
+    for doc, vecs in tqdm(processed):
+        db.query(ragloaddocs([(doc, vecs)]))
 
-    db.query(ragloaddocs([("POOOOOOOP 2.0", [[1, 1, 1, 1, 1]])]))
-    res = db.query(ragsearchdoc([0, 0, 0, 0, 0]))
-    print(res)
+    #import numpy as np
+    #db.query(ragtestload("POO", np.arange(768, dtype=float).tolist()))
+
+    #db.query(ragtestload("PEEEEE", [2, 2, 2, 2, 2]))
+    #res = db.query(ragsearchdoc([3, 3, 3, 3, 3]))
+    #print(res)
+
+    #db.query(ragloaddocs([("POOOOOOOP 2.0", [[1, 1, 1, 1, 1]])]))
+    #res = db.query(ragsearchdoc([0, 0, 0, 0, 0]))
+    #print("res:", res)
