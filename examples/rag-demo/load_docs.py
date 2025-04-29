@@ -1,5 +1,6 @@
+from transformers.utils.dummy_pt_objects import RagSequenceForGeneration
 import helix
-from helix.client import ragloaddocs, ragsearchdoc
+from helix.client import ragloaddocs, ragsearchdoc, ragtestload
 from typing import Tuple, List, Any
 
 # idk why I needed this but works better
@@ -195,7 +196,10 @@ if __name__ == "__main__":
 
     db = helix.Client(local=True)
 
-    db.query(ragloaddocs([("POOOOOOOP", [[1, 1, 1, 1, 1]])]))
+    db.query(ragtestload("PEEEEE", [2, 2, 2, 2, 2]))
+    res = db.query(ragsearchdoc([3, 3, 3, 3, 3]))
+    print(res)
 
-    res = db.query(ragsearchdoc([1, 1, 1, 1, 1]))
+    db.query(ragloaddocs([("POOOOOOOP 2.0", [[1, 1, 1, 1, 1]])]))
+    res = db.query(ragsearchdoc([0, 0, 0, 0, 0]))
     print(res)

@@ -82,6 +82,19 @@ class ragloaddocs(Query):
     def response(self, response):
         return response.get("res")
 
+
+class ragtestload(Query):
+    def __init__(self, doc: str, vec: List[float]):
+        super().__init__()
+        self.doc = doc
+        self.vec = vec
+
+    def query(self) -> List[Payload]:
+        return [{ "doc": self.doc, "vec": self.vec }]
+
+    def response(self, response):
+        return response.get("res")
+
 class ragsearchdoc(Query):
     def __init__(self, query_vector: List[float]): # TODO: temp format for now
         super().__init__()
@@ -126,7 +139,7 @@ class Client:
 
         for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'"):
             req_data = json.dumps(d).encode("utf-8")
-            print(req_data)
+            #print(req_data)
             try:
                 req = urllib.request.Request(
                     ep,
