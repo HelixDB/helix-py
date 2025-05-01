@@ -82,7 +82,6 @@ class ragloaddocs(Query):
     def response(self, response):
         return response.get("res")
 
-
 class ragtestload(Query):
     def __init__(self, doc: str, vec: List[float]):
         super().__init__()
@@ -103,7 +102,7 @@ class ragsearchdoc(Query):
     def query(self) -> List[Payload]:
         return [{ "query": self.query_vector }]
 
-    def response(self, response) -> Any:
+    def response(self, response) -> Any: # TODO: proper response handle
         return response
         #try:
         #    doc = response.get("doc", [])

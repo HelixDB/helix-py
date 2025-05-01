@@ -138,7 +138,7 @@ def fetch_rust_book_chapters() -> List[Any]:
     finally:
         driver.quit()
 
-def chunk_content(text: str, chunk_size: int=200) -> List[str]:
+def chunk_content(text: str, chunk_size: int=150) -> List[str]:
     # chunk size in words
     text = ' '.join(text.split()).strip()
 
@@ -167,7 +167,6 @@ def chunk_content(text: str, chunk_size: int=200) -> List[str]:
     return chunks
 
 def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
-    # embedding model and shit
     # embedding dims: 768
     vectorized = []
     for chunk in chunked:
@@ -180,7 +179,8 @@ def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
 
 def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, List[List[float]]]]:
     ret = []
-    for title, content in tqdm(chapters, desc="processing chapters"):
+    for title, content in (t := tqdm(chapters, desc="processing chapters")):
+        t.set_description("inserting docs for {title}")
         chunked = chunk_content(content)
         vectorized = vectorize_chunked(chunked)
         ret.append((content, vectorized)) # add chunked as well for properties
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     db = helix.Client(local=True)
 
     chapters = fetch_rust_book_chapters()
-    processed = process_to_vectorized(chapters[:40])
+    processed = process_to_vectorized(chapters[:1])
     for doc, vecs in tqdm(processed):
         db.query(ragloaddocs([(doc, vecs)]))
 
@@ -204,3 +204,13 @@ if __name__ == "__main__":
     #db.query(ragloaddocs([("POOOOOOOP 2.0", [[1, 1, 1, 1, 1]])]))
     #res = db.query(ragsearchdoc([0, 0, 0, 0, 0]))
     #print("res:", res)
+
+    #text = "Enter the code in Listing 2-1 into src/main.rs. use std::io; fn main() { println!(\"Guess the number!\"); println!(\"Please input your guess.\"); let mut guess = String::new(); io::stdin() .read_line(&mut guess) .expect(\"Failed to read line\"); println!(\"You guessed: {}\", guess); } This code contains a lot of information, so let's go over it line by line. To obtain user input and then print the result as output, we need to bring the io input/output library into scope. The io library comes from the standard library, known as std: use std::io; fn main() { println!(\"Guess the number!\"); println!(\"Please input your guess.\"); let mut guess = String::new(); io::stdin() .read_line(&mut guess) .expect(\"Failed to read line\"); println!(\"You guessed: {}\", guess); } By default, Rust has a set of items defined in the standard library that it brings into the scope of every program."
+    #inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    #with torch.no_grad():
+    #    outputs = model(**inputs)
+    #    embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
+    #print(len(embedding))
+
+    #res = db.query(ragsearchdoc(embedding))
+    #print(res)

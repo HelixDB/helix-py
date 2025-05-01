@@ -41,14 +41,16 @@ def prompt_loop():
         if user_prompt.lower() == "quit":
             break
 
-        reformat_prompt = f"Convert the following question into a concise query for retrieving Rust documentation: {user_prompt}"
+        reformat_prompt = f"""Convert the following question into a concise query that resembles snippets of rust documentation from the rust book
+for retrieving Rust documentation. You should ideally pull out all possible key words related to this. Do not give long code snippets
+just a couple of sentences using keywords related to the question asked. Should be no more than 200 words: {user_prompt}"""
         reformatted_query = get_ollama_response(reformat_prompt)
         print(f"\nReformatted Query: {reformatted_query}")
 
-        vectorized_prompt = vectorize_prompt(reformatted_query)
+        vectorized_prompt = vectorize_prompt(user_prompt)
 
         doc = db.query(ragsearchdoc(vectorized_prompt))
-        print(f"\nRetrieved Document: {doc[:200]}...")
+        print(f"\nRetrieved Document: {doc}...")
 
         response_prompt = f"Based on the following documentation, answer the question: {user_prompt}\n\nDocumentation: {doc}"
         response = get_ollama_response(response_prompt)
