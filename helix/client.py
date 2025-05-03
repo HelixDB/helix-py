@@ -122,7 +122,7 @@ class Client:
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
         try:
             hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
-            socket.create_connection((hostname, self.h_server_port), timeout=5)
+            socket.create_connection((hostname, self.h_server_port), timeout=5) # TODO: the ping causes Error parsing request: Custom { kind: InvalidData, error: "Missing HTTP method: " }
             print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'")
         except socket.error:
             raise Exception(f"{RHELIX} No helix server found at '{self.h_server_url}:{self.h_server_port}'")

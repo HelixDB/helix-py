@@ -179,8 +179,7 @@ def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
 
 def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, List[List[float]]]]:
     ret = []
-    for title, content in (t := tqdm(chapters, desc="processing chapters")):
-        t.set_description("inserting docs for {title}")
+    for _, content in tqdm(chapters):
         chunked = chunk_content(content)
         vectorized = vectorize_chunked(chunked)
         ret.append((content, vectorized)) # add chunked as well for properties
@@ -190,7 +189,7 @@ if __name__ == "__main__":
     db = helix.Client(local=True)
 
     chapters = fetch_rust_book_chapters()
-    processed = process_to_vectorized(chapters[:1])
+    processed = process_to_vectorized(chapters[:35])
     for doc, vecs in tqdm(processed):
         db.query(ragloaddocs([(doc, vecs)]))
 
@@ -206,6 +205,7 @@ if __name__ == "__main__":
     #print("res:", res)
 
     #text = "Enter the code in Listing 2-1 into src/main.rs. use std::io; fn main() { println!(\"Guess the number!\"); println!(\"Please input your guess.\"); let mut guess = String::new(); io::stdin() .read_line(&mut guess) .expect(\"Failed to read line\"); println!(\"You guessed: {}\", guess); } This code contains a lot of information, so let's go over it line by line. To obtain user input and then print the result as output, we need to bring the io input/output library into scope. The io library comes from the standard library, known as std: use std::io; fn main() { println!(\"Guess the number!\"); println!(\"Please input your guess.\"); let mut guess = String::new(); io::stdin() .read_line(&mut guess) .expect(\"Failed to read line\"); println!(\"You guessed: {}\", guess); } By default, Rust has a set of items defined in the standard library that it brings into the scope of every program."
+    #text = "Method Syntax Methods are similar to functions: we declare them with the fn keyword and a name, they can have parameters and a return value, and they contain some code that's run when the method is called from somewhere else. Unlike functions, methods are defined within the context of a struct (or an enum or a trait object, which we cover in Chapter 6 and Chapter 17, respectively), and their first parameter is always self, which represents the instance of the struct the method is being called on. "
     #inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
     #with torch.no_grad():
     #    outputs = model(**inputs)
