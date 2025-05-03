@@ -8,5 +8,6 @@
 
 from helix.client import Client, Query
 from helix.loader import Loader
+from helix.types import Payload
 
 __version__ = "0.1.0"
