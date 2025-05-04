@@ -1,6 +1,6 @@
 from transformers.utils.dummy_pt_objects import RagSequenceForGeneration
 import helix
-from helix.client import ragloaddocs, ragsearchdoc, ragtestload
+from helix.client import ragloaddocs
 from typing import Tuple, List, Any
 
 # idk why I needed this but works better
@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import re
 from urllib.parse import urljoin
-from transformers import BertTokenizer, BertModel
+from transformers import AutoTokenizer, AutoModel
 import torch
 from tqdm import tqdm
 import json
@@ -21,8 +21,9 @@ import os
 
 DATA_FILE = "data/rust_book_data.json"
 
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-model = BertModel.from_pretrained("bert-base-uncased")
+# SciBERT better tuned for scientific literature
+tokenizer = AutoTokenizer.from_pretrained("allenai/scibert_scivocab_uncased")
+model = AutoModel.from_pretrained("allenai/scibert_scivocab_uncased")
 
 def save_to_json(data: List[Tuple[str, str]], filename: str=DATA_FILE):
     with open(filename, 'w', encoding='utf-8') as f:
@@ -138,7 +139,7 @@ def fetch_rust_book_chapters() -> List[Any]:
     finally:
         driver.quit()
 
-def chunk_content(text: str, chunk_size: int=150) -> List[str]:
+def chunk_content(text: str, chunk_size: int=200) -> List[str]:
     # chunk size in words
     text = ' '.join(text.split()).strip()
 
@@ -181,6 +182,7 @@ def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, Li
     ret = []
     for _, content in tqdm(chapters):
         chunked = chunk_content(content)
+        print(f"chunks: {len(chunked)}")
         vectorized = vectorize_chunked(chunked)
         ret.append((content, vectorized)) # add chunked as well for properties
     return ret
@@ -189,7 +191,7 @@ if __name__ == "__main__":
     db = helix.Client(local=True)
 
     chapters = fetch_rust_book_chapters()
-    processed = process_to_vectorized(chapters[:35])
+    processed = process_to_vectorized(chapters)
     for doc, vecs in tqdm(processed):
         db.query(ragloaddocs([(doc, vecs)]))
 

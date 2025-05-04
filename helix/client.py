@@ -94,22 +94,22 @@ class ragtestload(Query):
     def response(self, response):
         return response.get("res")
 
-class ragsearchdoc(Query):
-    def __init__(self, query_vector: List[float]): # TODO: temp format for now
+class ragsearchdocs(Query):
+    def __init__(self, query_vector: List[float], k: int=4): # TODO: temp format for now
         super().__init__()
         self.query_vector = query_vector
+        self.k = k
 
     def query(self) -> List[Payload]:
-        return [{ "query": self.query_vector }]
+        return [{ "query": self.query_vector, "k": self.k }]
 
     def response(self, response) -> Any: # TODO: proper response handle
-        return response
-        #try:
-        #    doc = response.get("doc", [])
-        #    return doc
-        #except json.JSONDecodeError:
-        #    print(f"{RHELIX} Failed to parse response as JSON")
-        #    return None
+        try:
+            doc = response.get("doc_node", [])
+            return doc
+        except json.JSONDecodeError:
+            print(f"{RHELIX} Failed to parse response as JSON")
+            return None
 
 # TODO: connect to managed service as well via api key
 # TODO: have the server spin-up automatically when running or

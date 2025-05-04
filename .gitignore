@@ -3,3 +3,4 @@ venv/
 __pycache__/
 helix_py.egg-info/
 helixdb-queries/
+.ipynb_checkpoints/
