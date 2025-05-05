@@ -2,4 +2,6 @@ data/
 venv/
 __pycache__/
 helix_py.egg-info/
-helixdb-queries/
+build/
+.ipynb_checkpoints/
+examples/.ipynb_checkpoints/
