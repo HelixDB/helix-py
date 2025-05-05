@@ -162,6 +162,9 @@ def chunk_content(text: str, chunk_size: int=200) -> List[str]:
             current_chunk += sentence
             current_word_count += sentence_word_count
 
+        if len(chunks) >= 20:
+            break
+
     if current_chunk:
         chunks.append(current_chunk.strip())
 
@@ -182,15 +185,25 @@ def process_to_vectorized(chapters: List[Tuple[str, str]]) -> List[Tuple[str, Li
     ret = []
     for _, content in tqdm(chapters):
         chunked = chunk_content(content)
-        print(f"chunks: {len(chunked)}")
         vectorized = vectorize_chunked(chunked)
         ret.append((content, vectorized)) # add chunked as well for properties
     return ret
+
+def analyze_chunks(chapters: List[Tuple[str, str]]):
+    chunk_counts = {}
+    for title, content in tqdm(chapters):
+        chunked = chunk_content(content)
+        chunk_counts[title] = len(chunked)
+    return chunk_counts
 
 if __name__ == "__main__":
     db = helix.Client(local=True)
 
     chapters = fetch_rust_book_chapters()
+    #chunk_counts = analyze_chunks(chapters)
+    #[print(f"{title}: {count}") for title, count in chunk_counts.items()]
+    #print(f"max number of chunks: {max(chunk_counts.values())}")
+
     processed = process_to_vectorized(chapters)
     for doc, vecs in tqdm(processed):
         db.query(ragloaddocs([(doc, vecs)]))

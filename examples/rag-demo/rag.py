@@ -59,17 +59,15 @@ def prompt_loop():
 
         reformat_prompt = f"""Convert the following question into a concise query that resembles snippets of rust documentation from the rust book
         for retrieving Rust documentation. You should ideally recognize all possible key words related to this. Do not give long code snippets
-        just a couple of sentences using keywords related to the question asked. Don't add any extra new lines and stuff. Should not be longer
-        than 200 words: {user_prompt}"""
+        just a couple of sentences using keywords related to the question asked. Do not put it in markdown format, just a basic string of text.
+        Don't add any extra new lines and stuff. Should not be longer than 200 words: {user_prompt}"""
         reformatted_query = get_ollama_response(reformat_prompt)
         print(f"\nReformatted query: {reformatted_query}")
 
         vectorized_prompt = vectorize_prompt(user_prompt)
 
-        docs = db.query(ragsearchdocs(vectorized_prompt, 6))
-        for doc in docs[0]:
-            print(doc)
-            print("\n\n\n\n")
+        docs = db.query(ragsearchdocs(vectorized_prompt, 5))
+        print(docs)
 
         response = get_ollama_response(create_prompt(user_prompt, docs))
 
