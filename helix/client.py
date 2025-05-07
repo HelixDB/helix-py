@@ -68,14 +68,14 @@ class hnswsearch(Query):
             return None
 
 class ragloaddocs(Query):
-    def __init__(self, docs: List[Tuple[str, List[List[float]]]]):
+    def __init__(self, docs: List[Tuple[str, List[Tuple[List[float], str]]]]):
         super().__init__()
         self.docs = docs
 
     def query(self) -> List[Payload]: # TODO: batch send
         docs_payload = []
-        for doc, vecs in self.docs:
-            docs_payload.append({ "doc": doc, "vecs": vecs })
+        for doc, vectors in self.docs:
+            docs_payload.append({ "doc": doc, "vectors": [{ "vec": vec, "chunk": chunk } for vec, chunk in vectors]})
 
         return [{ "docs": docs_payload }]
 
@@ -92,7 +92,7 @@ class ragsearchdocs(Query):
         return [{ "query": self.query_vector, "k": self.k }]
 
     def response(self, response) -> Any: # TODO: proper response handle
-        return response
+        return response.get("res")
 
 # TODO: connect to managed service as well via api key
 # TODO: have the server spin-up automatically when running or

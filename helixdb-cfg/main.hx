@@ -18,33 +18,29 @@
 
 //QUERY hnswinsert(vector: [F64]) =>
 //    res <- AddV<Vector>(vector)
-//    RETURN res::{ID}
+//    RETURN res
 //
 //QUERY hnswload(vectors: [[F64]]) =>
-//    res <- BatchAddV<Type>(vectors)
-//    RETURN res::{ID}
+//    res <- BatchAddV<Vector>(vectors)
+//    RETURN res
 //
 //QUERY hnswsearch(query: [F64], k: I32) =>
-//    res <- SearchV<Type>(query, k)
+//    res <- SearchV<Vector>(query, k)
 //    RETURN res
 
-QUERY ragloaddocs(docs: [{ doc: String, vecs: [[F64]] }]) =>
-    FOR {doc, vec} IN docs {
-        doc_node <- AddN<Type>({ content: doc })
-        vectors <- BatchAddV<Doc>(vecs)
-        FOR vec IN vectors {
-            AddE<Contains>::From(doc_node)::To(vec)
+QUERY ragloaddocs(docs: [{ doc: String, vectors: [{vec: [F64], chunk: String}] }]) =>
+    FOR {doc, vectors} IN docs {
+        doc_node <- AddN<Doc>({ content: doc })
+        FOR {vec, chunk} IN vectors {
+            vec <- AddV<Embedding>(vec)
+            chunk_node <- AddN<Chunk>({ content: chunk })
+            AddE<Contains>::From(doc_node)::To(chunk_node)
+            AddE<EmbeddingOf>::From(chunk_node)::To(vec)
         }
     }
     RETURN "Success"
 
-//QUERY ragtestload(doc: String, vec: [F64]) =>
-//    doc_node <- AddN<Type>({ content: doc })
-//    vectors <- AddV<Doc>(vecs)
-//    AddE<Contains>::From(doc_node)::To(vec)
-//    RETURN "Success"
-
 QUERY ragsearchdocs(query: [F64], k: I32) =>
-    vec <- SearchV<Vector>(query, k)
-    doc_node <- vec::In<Contains>
-    RETURN doc_node::{content}
+    vec <- SearchV<Embedding>(query, k)
+    chunks <- vec::In<EmbeddingOf>
+    RETURN chunks::{content}

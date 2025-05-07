@@ -33,3 +33,26 @@
 // For more information on how to write queries,
 // see the documentation at https://docs.helix-db.com
 // or checkout our GitHub at https://github.com/HelixDB/helix-db
+N::Doc {
+    content: String
+}
+
+V::Embedding {
+    chunk: String,
+    vec: [F64]
+}
+
+N::Chunk {
+    content: String
+}
+
+E::EmbeddingOf {
+    From: Doc,
+    To: Embedding,
+    Properties: {
+    }
+}
+
+V::Vector {
+    vec: [F64]
+}
