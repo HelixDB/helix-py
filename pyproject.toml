@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["helix/"]
+
+[project]
+name = "helix-py"
+version = "0.2.1"
+authors = [{ name = "HelixDB Team", email = "lukas@helix-db.com"}]
+description = "HelixDB Python library for easy rag agents"
+readme = "README.md"
+requires-python = ">=3.12"
+liscense = { file = "LICENSE" }
+dependencies = [
+    "numpy >= 2.2.5",
+    "pyarrow >= 19.0.1",
+    "tqdm >= 4.67.1",
+]
+
+[project.urls]
+Homepage = "https://www.helix-db.com/"
+Documentation = "https://docs.helix-db.com/"
+Issues = "https://github.com/HelixDB/helix-py/issues"
