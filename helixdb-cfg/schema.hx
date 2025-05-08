@@ -52,7 +52,3 @@ E::EmbeddingOf {
     Properties: {
     }
 }
-
-V::Vector {
-    vec: [F64]
-}
