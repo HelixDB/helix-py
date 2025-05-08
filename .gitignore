@@ -5,3 +5,4 @@ helix_py.egg-info/
 build/
 .ipynb_checkpoints/
 examples/.ipynb_checkpoints/
+helixdb-cfg/
