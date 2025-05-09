@@ -1,10 +1,10 @@
 
 {
     "vector_config": {
-        "m": 16,
-        "ef_construction": 128,
+        "m": 32,
+        "ef_construction": 512,
         "ef_search": 768,
-        "db_max_size": 20
+        "db_max_size": 1000
     },
     "graph_config": {
         "secondary_indices": []

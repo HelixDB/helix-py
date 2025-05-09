@@ -1,16 +1,18 @@
-QUERY ragloaddocs(docs: [{ doc: String, vectors: [{vec: [F64], chunk: String}] }]) =>
-    FOR {doc, vectors} IN docs {
-        doc_node <- AddN<Doc>({ content: doc })
-        FOR {vec, chunk} IN vectors {
-            vec <- AddV<Embedding>(vec)
-            chunk_node <- AddN<Chunk>({ content: chunk })
-            AddE<Contains>::From(doc_node)::To(chunk_node)
-            AddE<EmbeddingOf>::From(chunk_node)::To(vec)
+QUERY loaddocs_rag(chapters: [{ id: I64, subchapters: [{ title: String, content: String, chunks: [{chunk: String, vector: [F64]}]}] }]) =>
+    FOR {id, subchapters} IN chapters {
+        chapter_node <- AddN<Chapter>({ chapter_index: id })
+        FOR {title, content, chunks} IN subchapters {
+            subchapter_node <- AddN<SubChapter>({ title: title, content: content })
+            AddE<Contains>::From(chapter_node)::To(subchapter_node)
+            FOR {chunk, vector} IN chunks {
+                vec <- AddV<Embedding>(vector)
+                AddE<EmbeddingOf>({chunk: chunk})::From(subchapter_node)::To(vec)
+            }
         }
     }
     RETURN "Success"
 
-QUERY ragsearchdocs(query: [F64], k: I32) =>
-    vec <- SearchV<Embedding>(query, k)
-    chunks <- vec::In<EmbeddingOf>
-    RETURN chunks::{content}
+QUERY searchdocs_rag(query: [F64], k: I32) =>
+    vecs <- SearchV<Embedding>(query, k)
+    subchapters <- vecs::In<EmbeddingOf>
+    RETURN subchapters::{title, content}

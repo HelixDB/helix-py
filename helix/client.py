@@ -73,11 +73,8 @@ class ragloaddocs(Query):
         self.docs = docs
 
     def query(self) -> List[Payload]: # TODO: batch send
-        docs_payload = []
-        for doc, vectors in self.docs:
-            docs_payload.append({ "doc": doc, "vectors": [{ "vec": vec, "chunk": chunk } for vec, chunk in vectors]})
-
-        return [{ "docs": docs_payload }]
+        payload  = [({ "doc": doc, "vectors": [{ "vec": vec, "chunk": chunk } for vec, chunk in vectors]}) for doc, vectors in self.docs]
+        return [{ "docs": payload }]
 
     def response(self, response):
         return response.get("res")

@@ -70,7 +70,7 @@ nearest = db.query(hnswsearch(my_query)) # query hnsw index
 ## Roadmap
 - [X] Goal 1: default data loading and http client up and running
 - [X] Goal 2: full working default queries
-- [ ] Goal 3: working rag pipeline with default queries and workflow
+- [X] Goal 3: working rag pipeline with default queries and workflow
 - [ ] Goal 4: processing, chunking, tokenizing, vectorising data
 - [ ] Goal 5: some sort of knowledge storing and loading system to build a brain for an llm (for now)
 

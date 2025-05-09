@@ -1,19 +1,27 @@
-N::Doc {
-    content: String
-}
-    
-V::Embedding {
-    chunk: String,
-    vec: [F64]
+N::Chapter {
+    chapter_index: I64
 }
 
-N::Chunk {
+N::SubChapter {
+    title: String,
     content: String
+}
+
+E::Contains {
+    From: Chapter,
+    To: SubChapter,
+    Properties: {
+    }
+}
+
+V::Embedding {
+    chunk: String
 }
 
 E::EmbeddingOf {
-    From: Doc,
-    To: Embedding, 
+    From: SubChapter,
+    To: Embedding,
     Properties: {
+        chunk: String
     }
 }
