@@ -14,7 +14,7 @@ forward pass, you can do the same thing for a helix-db query. We provide some de
 own queries if you plan on doing more complex things. For example, for this hql query
 ```sql
 QUERY addUser(name: String, age: Integer) =>
-  AddV<User>({Name: name, Age: age})
+  AddV<User>({name: name, nge: age})
   RETURN "Success"
 ```
 you would write
@@ -24,7 +24,7 @@ class addUser(Query):
         super().__init__()
         self.user = user
     def query(self):
-        return [{ "Name": self.user[0], "Age": self.user[1] }]
+        return [{ "name": self.user[0], "age": self.user[1] }]
     def response(self, response):
         pass
 ```
@@ -37,9 +37,7 @@ your queries
 
 ## Installation
 ```bash
-git clone https://github.com/HelixDB/helix-py
-cd helix-py
-python3 -m pip install -e . # use a venv if needed
+pip install helix-py
 ```
 See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) for more
 information on installing helix-db
@@ -60,7 +58,7 @@ import helix
 from helix.client import hnswload, hnswsearch
 
 db = helix.Client(local=True)
-data = helix.Loader("path/to/data", cols=["openai"])
+data = helix.Loader("path/to/data", cols=["vecs"])
 ids = db.query(hnswload(data)) # build hnsw index
 
 my_query = [0.32, ..., -1.321]

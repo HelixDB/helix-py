@@ -1,8 +1,8 @@
-import helix
+from helix import Client, Loader
 from helix.client import hnswload, hnswsearch
 
-db = helix.Client(local=True)
-data = helix.Loader("data/dpedia-openai-1m/train-00000-of-00026-3c7b99d1c7eda36e.parquet", cols=["openai"]) # https://huggingface.co/datasets/KShivendu/dbpedia-entities-openai-1M
+db = Client(local=True)
+data = Loader("data/dpedia-openai-1m/train-00000-of-00026-3c7b99d1c7eda36e.parquet", cols=["openai"]) # https://huggingface.co/datasets/KShivendu/dbpedia-entities-openai-1M
 ids = db.query(hnswload(data))
 
 my_query = data.get_data()[1000].tolist()

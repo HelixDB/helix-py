@@ -1,13 +1,13 @@
 # import helix-py library and default queries
-import helix
+from helix import Client, Query, Loader
 from helix.client import hnswinsert, hnswload, hnswsearch
 from typing import Tuple
 
 # setup a connection to a helix-db instance running locally
-db = helix.Client(local=True)
+db = Client(local=True)
 
 # load your data from parquet, fvecs, or csv files
-data_loader = helix.Loader("data/dpedia-openai-1m/train-00000-of-00026.parquet", cols=["openai"])
+data_loader = Loader("data/dpedia-openai-1m/train-00000-of-00026.parquet", cols=["openai"])
 
 # -- for vectors using built-in hnsw queries
 
@@ -26,15 +26,15 @@ vecs = db.query(hnswsearch(my_search_vector))
 
 # define what your query should handle in both the sending an receiveing part
 # the end point of your helix-db instance should then be '/addUser'
-class addUser(helix.Query):
+class addUser(Query):
     def __init__(self, user: Tuple[str, int]):
         super().__init__()
         self.user = user
     def query(self):
         return [{ "Name": self.user[0], "Age": self.user[1] }]
     def response(self, response):
-
         pass
+
 # calling db.query(addUser(("John", 24))) will then call the query method
 #   you defined and send the data, if you are search/getting some sort of data
 #   the response method that you define will then also automatically be called

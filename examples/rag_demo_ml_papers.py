@@ -2,9 +2,7 @@
 # 2. source venv/bin/activate
 # 3. pip install chonkie docling torch transformers tqdm requests helix-py
 
-import helix
-from helix.client import Query
-from helix.types import Payload
+from helix import Client, Query, Payload
 from typing import List, Tuple
 
 from chonkie import RecursiveChunker, RecursiveRules, RecursiveLevel
@@ -77,7 +75,7 @@ def process_papers():
     print("chunked and loaded papers")
     return list(zip(text_papers, papers_chunks)) # List[Tuple[str, Sequence[Chunk]]]
 
-def load(db: helix.Client):
+def load(db: Client):
     papers = process_papers()
     docs = []
     for paper, chunks in papers:
@@ -87,7 +85,7 @@ def load(db: helix.Client):
     res =db.query(ragloaddocs(docs))
     print(f"helix load response: {res[0]}")
 
-def query(db: helix.Client):
+def query(db: Client):
     print("querying...")
     queries = [
         "what is attention as it relates to transformers and how does it work?",
@@ -103,7 +101,7 @@ def query(db: helix.Client):
         print(f"-----------\nquery: {query}\nfetched:\n{res_text}")
 
 if __name__ == "__main__":
-    db = helix.Client(local=True)
+    db = Client(local=True)
 
     load(db)
     query(db)
