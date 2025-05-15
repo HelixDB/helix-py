@@ -23,12 +23,12 @@ class addUser(Query):
     def __init__(self, user: Tuple[str, int]):
         super().__init__()
         self.user = user
-    def query(self):
+    def query(self) -> List[Any]:
         return [{ "name": self.user[0], "age": self.user[1] }]
     def response(self, response):
         pass
 ```
-for your python script.
+for your python script. Make sure that the Query.query method returns a list of objects.
 
 ### Loader
 The loader (`helix/loader.py`) currently supports `.parquet`, `.fvecs`, and `.csv` data. Simply pass in the path to your
