@@ -91,7 +91,6 @@ class ragsearchdocs(Query):
     def response(self, response) -> Any: # TODO: proper response handle
         return response.get("res")
 
-# TODO: connect to managed service as well via api key
 # TODO: have the server spin-up automatically when running or
 #   have it running already before starting script
 #   maybe try a .init to start from python script
