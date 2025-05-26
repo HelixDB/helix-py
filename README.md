@@ -45,7 +45,7 @@ information on installing helix-db
 curl -sSL "https://install.helix-db.com" | bash
 helix install
 helix init
-helix deploy --local
+helix deploy
 ```
 Now you're good to go! See `examples/` for how to use helix-py. See
 `helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
