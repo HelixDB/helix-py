@@ -16,3 +16,4 @@ QUERY searchdocs_rag(query: [F64], k: I32) =>
     vecs <- SearchV<Embedding>(query, k)
     subchapters <- vecs::In<EmbeddingOf>
     RETURN subchapters::{title, content}
+
