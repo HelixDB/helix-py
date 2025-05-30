@@ -36,17 +36,31 @@ file or files and the columns you want to process and the loader does the rest f
 your queries
 
 ## Installation
+### Install helix-py
 ```bash
 pip install helix-py
 ```
 See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) for more
 information on installing helix-db
+
+### Install the Helix CLI
 ```bash
 curl -sSL "https://install.helix-db.com" | bash
 helix install
 helix init
 helix deploy
 ```
+
+### Install Ollama
+Install [Ollama here](https://ollama.com/download)
+
+Then run ollama and the model you want to use
+```bash
+ollama serve
+ollama run llama3.1:8b
+```
+
+
 Now you're good to go! See `examples/` for how to use helix-py. See
 `helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
 and write corresponding `Query` classes in your python script.
