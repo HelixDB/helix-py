@@ -95,8 +95,8 @@ class ragsearchdocs(Query):
 #   have it running already before starting script
 #   maybe try a .init to start from python script
 class Client:
-    def __init__(self, local: bool, port: int=80, api_endpoint: str=""):
-        self.h_server_port = 6969 if local else port
+    def __init__(self, local: bool, port: int=6969, api_endpoint: str=""):
+        self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
         try:
