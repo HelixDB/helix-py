@@ -5,4 +5,5 @@ from helix.client import Client, Query
 from helix.types import Payload
 from helix.loader import Loader
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
+

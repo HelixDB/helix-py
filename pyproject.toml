@@ -7,8 +7,8 @@ packages = ["helix/"]
 
 [project]
 name = "helix-py"
-version = "0.2.2"
-authors = [{ name = "HelixDB Team", email = "lukas@helix-db.com"}]
+version = "0.2.3"
+authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 description = "HelixDB Python library for easy rag agents"
 readme = "README.md"
 requires-python = ">=3.12"
