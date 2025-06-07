@@ -7,3 +7,4 @@ build/
 examples/.ipynb_checkpoints/
 helixdb-cfg/
 dist/
+.venv/

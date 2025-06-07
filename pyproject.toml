@@ -5,6 +5,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["helix/"]
 
+[tool.uv.workspace]
+members = [
+    "examples/sample_mcp_server",
+]
+
 [project]
 name = "helix-py"
 version = "0.2.3"

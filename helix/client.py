@@ -1,10 +1,10 @@
 from helix.loader import Loader
-from helix.types import GHELIX, RHELIX, Payload, NP_FVec
+from helix.types import GHELIX, RHELIX, Payload
 import socket
 import json
 import urllib.request
 import urllib.error
-from typing import List, Optional, Any, Tuple
+from typing import List, Optional, Any
 from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import tqdm
@@ -48,7 +48,7 @@ class hnswload(Query):
         return payloads
 
     def response(self, response) -> Any:
-        return response.get("res") # TODO: list of ids of inserted vectors
+        return response.get("res")
 
 class hnswsearch(Query):
     def __init__(self, query_vector: List[float], k: int=5):
@@ -67,29 +67,43 @@ class hnswsearch(Query):
             print(f"{RHELIX} Failed to parse response as JSON")
             return None
 
-class ragloaddocs(Query):
-    def __init__(self, docs: List[Tuple[str, List[Tuple[List[float], str]]]]):
-        super().__init__()
-        self.docs = docs
-
-    def query(self) -> List[Payload]: # TODO: batch send
-        payload  = [({ "doc": doc, "vectors": [{ "vec": vec, "chunk": chunk } for vec, chunk in vectors]}) for doc, vectors in self.docs]
-        return [{ "docs": payload }]
-
-    def response(self, response):
-        return response.get("res")
-
-class ragsearchdocs(Query):
-    def __init__(self, query_vector: List[float], k: int=4): # TODO: temp format for now
-        super().__init__()
-        self.query_vector = query_vector
-        self.k = k
-
+# mcp server queries
+class init(Query):
+    def __init__(self, addr: str, port: int):
+        super().__init__(endpoint="mcp/" + self.__class__.__name__)
+        self.connection_addr = addr
+        self.connection_port = port
     def query(self) -> List[Payload]:
-        return [{ "query": self.query_vector, "k": self.k }]
+        return [{
+            "connection_addr": self.connection_addr,
+            "connection_port": self.connection_port,
+        }]
+    def response(self, response):
+        return response # conn id
 
-    def response(self, response) -> Any: # TODO: proper response handle
-        return response.get("res")
+class call_tool(Query):
+    def __init__(self, payload: dict):
+        super().__init__(endpoint="mcp/" + self.__class__.__name__)
+        self.connection_id = payload.get("connection_id")
+        self.tool = payload.get("tool")
+        self.args = payload.get("args")
+    def query(self) -> List[Payload]:
+        return [{
+            "connection_id": self.connection_id,
+            "tool": self.tool,
+            "args": self.args,
+        }]
+    def response(self, response):
+        return response
+
+class next(Query):
+    def __init__(self, conn_id: str):
+        super().__init__(endpoint="mcp/" + self.__class__.__name__)
+        self.connection_id = conn_id
+    def query(self) -> List[Payload]:
+        return [{"connection_id": self.connection_id}]
+    def response(self, response):
+        return response
 
 # TODO: have the server spin-up automatically when running or
 #   have it running already before starting script
