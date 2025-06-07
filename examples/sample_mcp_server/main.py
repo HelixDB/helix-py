@@ -1,9 +1,18 @@
 from mcp.server.fastmcp import FastMCP
 import helix
 from typing import Optional, Tuple, List
+from loguru import logger
+import sys
 
 mcp = FastMCP("helix-mcp")
 client = helix.Client(local=True, port=6969)
+
+logger.remove()
+logger.add(
+    sys.stderr,
+    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+    level="DEBUG",
+)
 
 @mcp.tool()
 def init(connection_addr: str, connection_port: int) -> str:
@@ -25,10 +34,13 @@ def out_step(connection_id: str, edge_label: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -38,10 +50,13 @@ def out_e_step(connection_id: str, edge_label: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -54,10 +69,13 @@ def in_step(connection_id: str, edge_label: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -67,10 +85,13 @@ def in_e_step(connection_id: str, edge_label: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -80,10 +101,13 @@ def n_from_type(connection_id: str, node_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -93,10 +117,13 @@ def e_from_type(connection_id: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
 @mcp.tool()
@@ -112,9 +139,12 @@ def filter_items(
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    logger.info(f"res {response}")
     return response[0]
 
