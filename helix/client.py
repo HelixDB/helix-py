@@ -65,7 +65,7 @@ class hnswsearch(Query):
             vectors = response.get("res")
             return [(vector["id"], np.array(vector["data"], dtype=np.float64)) for vector in vectors]
         except json.JSONDecodeError:
-            print(f"{RHELIX} Failed to parse response as JSON", file=sys.stderr)
+            #print(f"{RHELIX} Failed to parse response as JSON", file=sys.stderr)
             return None
 
 # mcp server queries
@@ -117,7 +117,7 @@ class Client:
         try:
             hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
             socket.create_connection((hostname, self.h_server_port), timeout=5)
-            print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
+            #print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
         except socket.error:
             raise Exception(f"{RHELIX} No helix server found at '{self.h_server_url}:{self.h_server_port}'")
 
@@ -130,7 +130,8 @@ class Client:
         total = len(query_data) if hasattr(query_data, "__len__") else None
         responses = []
 
-        for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'", file=sys.stderr):
+        for d in query_data:
+        #for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'", file=sys.stderr):
             req_data = json.dumps(d).encode("utf-8")
             try:
                 req = urllib.request.Request(
@@ -144,7 +145,7 @@ class Client:
                     if response.getcode() == 200:
                         responses.append(query.response(json.loads(response.read().decode("utf-8"))))
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
+                #print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
                 responses.append(None)
 
         return responses
