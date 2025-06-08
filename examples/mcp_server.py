@@ -1,6 +1,30 @@
+# $ uv init project
+# $ cp mcp_server.py project
+# $ cd project
+# $ uv venv && source .venv/bin/activate
+# $ uv add helix-py "mcp[cli]"
+# then for claude-desktop add this to ~/Library/Application Support/Claude/claude_desktop_config.json
+#   adjusting paths of course
+"""
+{
+  "mcpServers": {
+    "helix-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/ln/dev/helix-py/examples/sample_mcp_server",
+        "run",
+        "main.py"
+      ]
+    }
+  }
+}
+"""
+
 from mcp.server.fastmcp import FastMCP
 import helix
 from typing import Optional, Tuple, List
+import sys
 
 mcp = FastMCP("helix-mcp")
 client = helix.Client(local=True, port=6969)
@@ -25,10 +49,13 @@ def out_step(connection_id: str, edge_label: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -38,10 +65,13 @@ def out_e_step(connection_id: str, edge_label: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -54,10 +84,13 @@ def in_step(connection_id: str, edge_label: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -67,10 +100,13 @@ def in_e_step(connection_id: str, edge_label: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -80,10 +116,13 @@ def n_from_type(connection_id: str, node_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -93,10 +132,13 @@ def e_from_type(connection_id: str, edge_type: str) -> str:
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
 
 @mcp.tool()
@@ -112,9 +154,15 @@ def filter_items(
 
     payload = {
         "connection_id": connection_id,
-        "tool": tool,
-        "args": args,
+        "tool": {
+            "tool_name": tool,
+            "args": args,
+        },
     }
     response = client.query(helix.call_tool(payload))
+    print(f"res {response}", file=sys.stderr)
     return response[0]
+
+if __name__ == "__main__":
+    mcp.run()
 
