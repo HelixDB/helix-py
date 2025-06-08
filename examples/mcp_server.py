@@ -14,7 +14,7 @@
         "--directory",
         "/Users/ln/dev/helix-py/examples/sample_mcp_server",
         "run",
-        "main.py"
+        "mcp_server.py"
       ]
     }
   }
