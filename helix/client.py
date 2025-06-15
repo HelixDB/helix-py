@@ -57,8 +57,7 @@ class hnswsearch(Query):
         self.query_vector = query_vector
         self.k = k
 
-    def query(self) -> List[Payload]:
-        return [{ "query": self.query_vector, "k": self.k }]
+    def query(self) -> List[Payload]: return [{ "query": self.query_vector, "k": self.k }]
 
     def response(self, response) -> Any:
         try:
@@ -70,17 +69,11 @@ class hnswsearch(Query):
 
 # mcp server queries
 class init(Query):
-    def __init__(self, addr: str, port: int):
+    def __init__(self):
+        # TODO: do this better/more simple
         super().__init__(endpoint="mcp/" + self.__class__.__name__)
-        self.connection_addr = addr
-        self.connection_port = port
-    def query(self) -> List[Payload]:
-        return [{
-            "connection_addr": self.connection_addr,
-            "connection_port": self.connection_port,
-        }]
-    def response(self, response):
-        return response # conn id
+    def query(self) -> List[Payload]: return [{}]
+    def response(self, response): return response # conn id
 
 class call_tool(Query):
     def __init__(self, payload: dict):
@@ -94,17 +87,21 @@ class call_tool(Query):
             "tool": self.tool,
             "args": self.args,
         }]
-    def response(self, response):
-        return response
+    def response(self, response): return response
 
 class next(Query):
     def __init__(self, conn_id: str):
         super().__init__(endpoint="mcp/" + self.__class__.__name__)
         self.connection_id = conn_id
-    def query(self) -> List[Payload]:
-        return [{"connection_id": self.connection_id}]
-    def response(self, response):
-        return response
+    def query(self) -> List[Payload]: return [{"connection_id": self.connection_id}]
+    def response(self, response): return response
+
+class schema_resource(Query):
+    def __init__(self, conn_id: str):
+        super().__init__(endpoint="mcp/" + self.__class__.__name__)
+        self.connection_id = conn_id
+    def query(self) -> List[Payload]: return [{"connection_id": self.connection_id}]
+    def response(self, response): return response
 
 # TODO: have the server spin-up automatically when running or
 #   have it running already before starting script
