@@ -1,6 +1,5 @@
 import subprocess
 import re
-import pexpect
 from pathlib import Path
 import os
 from helix.types import GHELIX, RHELIX
@@ -119,18 +118,18 @@ class Instance:
 
     def delete(self):
         if self.verbose: print(f"{GHELIX} Deleting Helix instance: {self.instance_id}")
-        process = pexpect.spawn(
-            ' '.join(['helix', 'delete', self.instance_id]),
+        process = subprocess.run(
+            ['helix', 'delete', self.instance_id],
+            input="y\n",  # Send 'y' and newline as input
+            text=True,
+            capture_output=True
         )
 
-        process.expect("Are you sure you want to delete", timeout=10)
-        process.sendline("y")
-        process.expect(pexpect.EOF, timeout=10)
+        output = process.stdout.split('\n')
 
-        output = process.before.decode('utf-8').split('\n')
+        output = [self.process_line.sub('', line) for line in output if not line.startswith("Are you sure you want to delete")]
 
-        for line in output[1:]:
-            line = self.process_line.sub('', line)
+        for line in output:
             if self.verbose: print(line)
 
         if "error" in "\n".join(output).lower():
