@@ -47,7 +47,7 @@ class Instance:
             if self.verbose: print(f"{GHELIX} Found existing instance IDs: {self.ids_running}", file=sys.stderr)
 
         # Get instance ID from port
-        if self.port in self.port_ids:
+        if str(self.port) in self.port_ids:
             self.instance_id = self.port_ids.get(str(self.port), None)
 
         # Create config directory
@@ -55,8 +55,9 @@ class Instance:
         os.makedirs(os.path.join(self.helix_dir, self.config_path), exist_ok=True)
 
     def deploy(self):
-        if self.instance_id or self.port in self.port_ids: # Instance already exists -> redeploy
-            raise Exception(f"{HHELIX} Instance already exists on port {self.port}")
+        if self.instance_id or str(self.port) in self.port_ids: # Instance already exists
+            if self.verbose: print(f"{GHELIX} Instance already exists - redeploying", file=sys.stderr)
+            return self.redeploy()
 
         if self.verbose: print(f"{GHELIX} Deploying Helix instance", file=sys.stderr)
         
@@ -84,7 +85,7 @@ class Instance:
         process.wait()
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to deploy Helix instance")
 
         self.instance_id = [out for out in output if out.startswith("Instance ID:")][0].removeprefix("Instance ID: ").removesuffix(" (running)").removesuffix(" (not running)")
@@ -99,8 +100,8 @@ class Instance:
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance not found")
 
-        if not self.ids_running.get(self.instance_id, False):
-            raise Exception(f"{RHELIX} Instance is not running")
+        if self.ids_running.get(self.instance_id, False):
+            self.stop()
 
         if self.verbose: print(f"{GHELIX} Redeploying Helix instance: {self.instance_id}", file=sys.stderr)
         cmd = ['helix', 'redeploy', '--path', self.config_path, self.instance_id]
@@ -120,7 +121,7 @@ class Instance:
         process.wait()
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to redeploy Helix instance")
 
         self.ids_running[self.instance_id] = True
@@ -152,7 +153,7 @@ class Instance:
         process.wait()
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to start Helix instance")
 
         self.ids_running[self.instance_id] = True
@@ -183,7 +184,7 @@ class Instance:
         process.wait()
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to stop Helix instance")
 
         self.ids_running[self.instance_id] = False
@@ -210,10 +211,10 @@ class Instance:
             if self.verbose: print(line, file=sys.stderr)
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to delete Helix instance")
 
-        del self.port_ids[self.port]
+        del self.port_ids[str(self.port)]
         del self.ids_running[self.instance_id]
         self.instance_id = None
 
@@ -238,7 +239,7 @@ class Instance:
         process.wait()
 
         if "error" in "\n".join(output).lower():
-            if self.verbose: print("\n".join(output), file=sys.stderr)
+            if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to get Helix instance status")
 
         if len(output) > 1 and output[0].startswith("Instance ID"):
