@@ -8,7 +8,7 @@ import sys
 class Instance:
     def __init__(self, config_path=None, port=None, verbose=False):
         self.config_path = config_path
-        self.port = port
+        self.port = str(port)
         self.instance_id = None
         self.port_ids = {}
         self.ids_running = {}
@@ -35,10 +35,10 @@ class Instance:
             running = []
             for line in output:
                 if line.startswith("Instance ID: "):
-                    ids.append(line.removeprefix("Instance ID: ").removesuffix(" (running)").removesuffix(" (not running)"))
+                    ids.append(str(line.removeprefix("Instance ID: ").removesuffix(" (running)").removesuffix(" (not running)")))
                     running.append(line.split(" ")[-1] == "(running)")
                 elif line.startswith("└── Port: "):
-                    ports.append(line.removeprefix("└── Port: "))
+                    ports.append(str(line.removeprefix("└── Port: ")))
             
             self.port_ids = dict(zip(ports, ids))
             self.ids_running = dict(zip(ids, running))
@@ -47,17 +47,22 @@ class Instance:
             if self.verbose: print(f"{GHELIX} Found existing instance IDs: {self.ids_running}", file=sys.stderr)
 
         # Get instance ID from port
-        if str(self.port) in self.port_ids:
-            self.instance_id = self.port_ids.get(str(self.port), None)
+        if self.port in self.port_ids:
+            self.instance_id = self.port_ids.get(self.port, None)
 
         # Create config directory
         self.helix_dir = Path(os.path.dirname(os.path.curdir)).resolve()
         os.makedirs(os.path.join(self.helix_dir, self.config_path), exist_ok=True)
 
-    def deploy(self):
-        if self.instance_id or str(self.port) in self.port_ids: # Instance already exists
-            if self.verbose: print(f"{GHELIX} Instance already exists - redeploying", file=sys.stderr)
-            return self.redeploy()
+    def deploy(self, redeploy: bool=False):
+        if self.instance_id or self.port in self.port_ids: # Instance already exists
+            if redeploy:
+                return self.redeploy()
+            if self.verbose: print(f"{GHELIX} Instance already exists - starting", file=sys.stderr)
+            return self.start()
+
+        if redeploy:
+            raise Exception(f"{RHELIX} Instance not found")
 
         if self.verbose: print(f"{GHELIX} Deploying Helix instance", file=sys.stderr)
         
@@ -66,7 +71,7 @@ class Instance:
         if self.config_path:
             cmd.extend(['--path', self.config_path])
         if self.port:
-            cmd.extend(['--port', str(self.port)])
+            cmd.extend(['--port', self.port])
 
         # Deploy instance
         process = subprocess.Popen(
@@ -213,8 +218,8 @@ class Instance:
         if "error" in "\n".join(output).lower():
             if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to delete Helix instance")
-
-        del self.port_ids[str(self.port)]
+            
+        del self.port_ids[self.port]
         del self.ids_running[self.instance_id]
         self.instance_id = None
 
@@ -251,7 +256,7 @@ class Instance:
                     ids.append(line.removeprefix("Instance ID: ").removesuffix(" (running)").removesuffix(" (not running)"))
                     running.append(line.split(" ")[-1] == "(running)")
                 elif line.startswith("└── Port: "):
-                    ports.append(line.removeprefix("└── Port: "))
+                    ports.append(str(line.removeprefix("└── Port: ")))
             self.port_ids = dict(zip(ports, ids))
             self.ids_running = dict(zip(ids, running))
         if self.verbose: print(f"{GHELIX} Ports: {self.port_ids}", file=sys.stderr)
