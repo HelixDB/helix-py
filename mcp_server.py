@@ -30,14 +30,16 @@ mcp = FastMCP("helix-mcp")
 client = helix.Client(local=True, port=6969)
 
 @mcp.tool()
-def init(connection_addr: str, connection_port: int) -> str:
-    response = client.query(helix.init(connection_addr, connection_port))
-    return response[0]
+def init() -> str: return client.query(helix.init())[0]
 
 @mcp.tool()
-def next(connection_id: str) -> str:
-    response = client.query(helix.next(connection_id))
-    return response[0]
+def next(connection_id: str) -> str: return client.query(helix.next(connection_id))[0]
+
+@mcp.resource("config://{connection_id}/schema")
+def schema_resource(connection_id: str) -> str:
+    return client.query(helix.schema_resource(connection_id))[0]
+
+# TODO: something like a resource to show the schema of the db
 
 @mcp.tool()
 def out_step(connection_id: str, edge_label: str, edge_type: str) -> str:
