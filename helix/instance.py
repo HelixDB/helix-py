@@ -58,8 +58,11 @@ class Instance:
         if self.instance_id or self.port in self.port_ids: # Instance already exists
             if redeploy:
                 return self.redeploy()
-            if self.verbose: print(f"{GHELIX} Instance already exists - starting", file=sys.stderr)
-            return self.start()
+            if not self.ids_running.get(self.instance_id, False):
+                if self.verbose: print(f"{GHELIX} Instance already exists - starting", file=sys.stderr)
+                return self.start()
+            if self.verbose: print(f"{GHELIX} Instance already running", file=sys.stderr)
+            return
 
         if redeploy:
             raise Exception(f"{RHELIX} Instance not found")
