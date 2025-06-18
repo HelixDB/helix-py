@@ -99,7 +99,7 @@ then for claude-desktop for example add this to
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/ln/dev/helix-py/examples/sample_mcp_server",
+        "/Users/user/helix-py/proect",
         "run",
         "mcp_server.py"
       ]
