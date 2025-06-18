@@ -79,6 +79,35 @@ my_query = [0.32, ..., -1.321]
 nearest = db.query(hnswsearch(my_query)) # query hnsw index
 ```
 
+## Getting Started With MCP With Helix
+Helix's custom mcp server backend is built into the db and the `mcp_server.py` server can be used
+to interface with that. To get started with this, you can for example use uv:
+
+```bash
+uv init project
+cp mcp_server.py project
+cd project
+uv venv && source .venv/bin/activate
+uv add helix-py "mcp[cli]"
+```
+then for claude-desktop for example add this to
+`~/Library/Application Support/Claude/claude_desktop_config.json` adjusting paths of course
+```json
+{
+  "mcpServers": {
+    "helix-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/ln/dev/helix-py/examples/sample_mcp_server",
+        "run",
+        "mcp_server.py"
+      ]
+    }
+  }
+}
+```
+
 ## Roadmap
 - [X] Goal 1: default data loading and http client up and running
 - [X] Goal 2: full working default queries
