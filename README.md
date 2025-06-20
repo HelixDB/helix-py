@@ -107,12 +107,6 @@ then for claude-desktop for example add this to
 }
 ```
 
-## Roadmap
-- [X] Goal 1: default data loading and http client up and running
-- [X] Goal 2: full working default queries
-- [X] Goal 3: working rag pipeline with default queries and workflow
-- [ ] Goal 4: processing, chunking, tokenizing, vectorising data
-- [ ] Goal 5: some sort of knowledge storing and loading system to build a brain for an llm (for now)
-
 ## License
 helix-py is licensed under the GNU General Public License v3.0 (GPL-3.0).
+
