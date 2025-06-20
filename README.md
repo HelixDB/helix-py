@@ -53,19 +53,6 @@ helix init
 helix deploy
 ```
 
-### Install Ollama
-Install [Ollama here](https://ollama.com/download)
-
-Then run ollama and the model you want to use
-```bash
-ollama serve
-ollama run llama3.1:8b
-```
-
-Now you're good to go! See `examples/` for how to use helix-py. See
-`helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
-and write corresponding `Query` classes in your python script.
-
 ## Documentation
 Proper docs are coming soon. See `examples/tutorial.py` for now.
 ```python
@@ -79,6 +66,21 @@ ids = db.query(hnswload(data)) # build hnsw index
 my_query = [0.32, ..., -1.321]
 nearest = db.query(hnswsearch(my_query)) # query hnsw index
 ```
+
+#### LLM Install for Demo
+For the demo in `examples/rag_demo/` you can also install [Ollama here](https://ollama.com/download)
+to get up and running with a local model.
+
+Just run this after installing ollama. (We used llama3.1:8b, but you can just use whatever you want
+ofcourse.)
+```bash
+ollama serve
+ollama pull llama3.1:8b
+```
+
+Now you're good to go! See `examples/` for how to use helix-py. See
+`helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
+and write corresponding `Query` classes in your python script.
 
 ## Getting Started With MCP With Helix
 Helix's custom mcp server backend is built into the db and the `mcp_server.py` server can be used
