@@ -14,8 +14,8 @@ forward pass, you can do the same thing for a helix-db query. We provide some de
 own queries if you plan on doing more complex things. For example, for this hql query
 ```sql
 QUERY addUser(name: String, age: I64) =>
-  AddV<User>({name: name, nge: age})
-  RETURN "Success"
+  usr <- AddV<User>({name: name, nge: age})
+  RETURN usr
 ```
 you would write
 ```python
@@ -23,10 +23,12 @@ class addUser(Query):
     def __init__(self, user: Tuple[str, int]):
         super().__init__()
         self.user = user
+
     def query(self) -> List[Any]:
         return [{ "name": self.user[0], "age": self.user[1] }]
+
     def response(self, response):
-        pass
+        return response
 ```
 for your python script. Make sure that the Query.query method returns a list of objects.
 
