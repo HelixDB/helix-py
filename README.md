@@ -13,7 +13,7 @@ forward pass, you can do the same thing for a helix-db query. We provide some de
 `helix/client.py` to get started with inserting and search vectors, but you can also define you're
 own queries if you plan on doing more complex things. For example, for this hql query
 ```sql
-QUERY addUser(name: String, age: Integer) =>
+QUERY addUser(name: String, age: I64) =>
   AddV<User>({name: name, nge: age})
   RETURN "Success"
 ```
@@ -59,7 +59,6 @@ Then run ollama and the model you want to use
 ollama serve
 ollama run llama3.1:8b
 ```
-
 
 Now you're good to go! See `examples/` for how to use helix-py. See
 `helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
