@@ -11,10 +11,10 @@ name = "helix-py"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 description = "HelixDB Python library for easy rag agents"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 liscense = { file = "LICENSE" }
 dependencies = [
-    "numpy >= 2.2.5",
+    "numpy >= 2.0.2",
     "pyarrow >= 19.0.1",
     "tqdm >= 4.67.1",
 ]
