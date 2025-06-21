@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 packages = ["helix/"]
 
 [project]
-version = "0.2.10"
+version = "0.2.11"
 name = "helix-py"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 description = "HelixDB Python library for easy rag agents"
