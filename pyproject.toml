@@ -9,7 +9,7 @@ packages = ["helix/"]
 helix-py = { workspace = true }
 
 [project]
-version = "0.2.13"
+version = "0.2.14"
 name = "helix-py"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 description = "HelixDB Python library for easy rag agents"
