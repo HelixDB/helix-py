@@ -6,32 +6,36 @@ from helix.instance import Instance
 helix_instance = Instance("helixdb-cfg", "6969", verbose=True)
 
 # Deploy
-print("\n" + "-"*20 + "DEPLOY" + "-"*20)
+print("\n" + "-"*20 + "DEPLOY TEST" + "-"*20)
+print("Instance should already be running:")
 helix_instance.deploy()
 print("-" * 70 + '\n')
 helix_instance.status()
 print("-" * 70 + '\n')
 
 # Stop
-print("\n" + "-"*20 + "STOP" + "-"*20)
+print("\n" + "-"*20 + "STOP TEST" + "-"*20)
 helix_instance.stop()
 print("-" * 70 + '\n')
 helix_instance.status()
 print("-" * 70 + '\n')
 
 # Start
-print("\n" + "-"*20 + "START" + "-"*20)
+print("\n" + "-"*20 + "START TEST" + "-"*20)
 helix_instance.start()
 print("-" * 70 + '\n')
 helix_instance.status()
 print("-" * 70 + '\n')
 
 # Delete
-print("\n" + "-"*20 + "DELETE" + "-"*20)
+print("\n" + "-"*20 + "DELETE TEST" + "-"*20)
 helix_instance.delete()
 print("-" * 70 + '\n')
 helix_instance.status()
 print("-" * 70 + '\n')
+
+# Initialize new instance (deployed automatically)
+helix_instance2 = Instance("helixdb-cfg", "6969")
 
 db = Client(local=True, port=6969)
 
@@ -178,24 +182,32 @@ for post in db.query(get_followed_users_posts(user1_id))[0]['posts']:
     print(post)
 print("\n")
 
-print("-"*20 + "NEW INSTANCE TO TERMINATE" + "-"*20)
-delete_db = Client(local=True, port=6970)
+# Create new instance concurrent to existing instance on
+# different port to test functionality with multiple ports
+print("-"*20 + "NEW CONCURRENT INSTANCE TEST" + "-"*20)
+delete_instance = Instance("helixdb-cfg", "6970")
+print("Should have 2 instances running:")
+print(delete_instance.status())
 print("\n")
 
-print("-"*20 + "STATUS" + "-"*20)
-print("Should have 2 instances running")
-print(delete_db.instance.status())
+print("-"*20 + "STOP TEST" + "-"*20)
+delete_instance.stop()
+print("Should have 1 instance running 1 not running:")
+print(delete_instance.status())
 print("\n")
 
-print("-"*20 + "TERMINATE" + "-"*20)
-delete_db.terminate()
+print("-"*20 + "START TEST" + "-"*20)
+delete_instance.start()
+print("Should have 2 instances running:")
+print(delete_instance.status())
 print("\n")
 
-print("-"*20 + "STATUS" + "-"*20)
-print("Should have 1 instance running")
-print(delete_db.instance.status())
+print("-"*20 + "DELETE TEST" + "-"*20)
+delete_instance.delete()
+print("Should only have 1 instance running:")
+print(delete_instance.status())
 print("\n")
 
 print("Should have 1 instance not running after script ends")
 print("Try running `helix instances` to see")
-print(f"\nRun `helix delete {db.instance.instance_id}` to delete the instance")
+print(f"\nRun `helix delete {helix_instance2.instance_id}` to delete the instance\n")

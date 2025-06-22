@@ -4,9 +4,10 @@ from pathlib import Path
 import os
 from helix.types import GHELIX, RHELIX
 import sys
+import atexit
 
 class Instance:
-    def __init__(self, config_path=None, port=None, verbose=False):
+    def __init__(self, config_path: str="helixdb-cfg", port: int=6969, redeploy: bool=False, verbose: bool=False):
         self.config_path = config_path
         self.port = str(port)
         self.instance_id = None
@@ -54,11 +55,14 @@ class Instance:
         self.helix_dir = Path(os.path.dirname(os.path.curdir)).resolve()
         os.makedirs(os.path.join(self.helix_dir, self.config_path), exist_ok=True)
 
+        # Auto deploy instance upon initialization
+        self.deploy(redeploy=redeploy)
+
     def deploy(self, redeploy: bool=False):
         if self.instance_id or self.port in self.port_ids: # Instance already exists
             if redeploy:
                 return self.redeploy()
-            if not self.ids_running.get(self.instance_id, False):
+            if not self.ids_running.get(self.instance_id, False): # Instance is not running
                 if self.verbose: print(f"{GHELIX} Instance already exists - starting", file=sys.stderr)
                 return self.start()
             if self.verbose: print(f"{GHELIX} Instance already running", file=sys.stderr)
@@ -100,6 +104,9 @@ class Instance:
 
         self.ids_running[self.instance_id] = True
 
+        # Auto stop instance upon exit
+        atexit.register(self.stop)
+
         if self.verbose: print(f"{GHELIX} Deployed Helix instance: {self.instance_id}")
 
         return '\n'.join(output)
@@ -108,7 +115,7 @@ class Instance:
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance not found")
 
-        if self.ids_running.get(self.instance_id, False):
+        if self.ids_running.get(self.instance_id, False): # Instance is running
             self.stop()
 
         if self.verbose: print(f"{GHELIX} Redeploying Helix instance: {self.instance_id}", file=sys.stderr)
@@ -137,10 +144,10 @@ class Instance:
         return '\n'.join(output)
 
     def start(self):
-        if not self.instance_id or self.instance_id not in self.ids_running:
+        if not self.instance_id or self.instance_id not in self.ids_running: # Instance not found
             raise Exception(f"{RHELIX} Instance not found")
 
-        if self.ids_running.get(self.instance_id, False):
+        if self.ids_running.get(self.instance_id, False): # Instance is already running
             raise Exception(f"{GHELIX} Instance is already running")
 
         if self.verbose: print(f"{GHELIX} Starting Helix instance: {self.instance_id}", file=sys.stderr)
@@ -222,9 +229,13 @@ class Instance:
             if not self.verbose: print("\n".join(output), file=sys.stderr)
             raise Exception(f"{RHELIX} Failed to delete Helix instance")
 
+        # Remove instance from port_ids and ids_running
         del self.port_ids[self.port]
         del self.ids_running[self.instance_id]
         self.instance_id = None
+
+        # Unregister auto stop upon exit
+        atexit.unregister(self.stop)
 
         return '\n'.join(output)
 
