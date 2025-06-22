@@ -81,7 +81,7 @@ class init(Query):
         return [{}]
 
     def response(self, response):
-        return response # conn id
+        return response.get("res") # conn id
 
 class call_tool(Query):
     def __init__(self, payload: dict):
