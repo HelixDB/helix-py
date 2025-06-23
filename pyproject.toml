@@ -9,13 +9,24 @@ packages = ["helix/"]
 helix-py = { workspace = true }
 
 [project]
-version = "0.2.15"
 name = "helix-py"
-authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
+version = "0.2.15"
+authors = [
+    { name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}
+]
+maintainers = [
+    { name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" },
+]
 description = "helix-db python lib + workflows"
 readme = "README.md"
 requires-python = ">=3.9"
 liscense = { file = "LICENSE" }
+keywords = [
+    "artificial-intelligence",
+    "machine-learning",
+    "knowledge graphs",
+    "rag",
+]
 dependencies = [
     "numpy >= 2.0.2",
     "pyarrow >= 19.0.1",
@@ -29,8 +40,8 @@ Issues = "https://github.com/HelixDB/helix-py/issues"
 
 [dependency-groups]
 dev = [
-    "helix-py",
     "build >= 1.2.2.post1",
+    "helix-py",
     "twine >= 6.1.0",
 ]
 
