@@ -1,9 +1,12 @@
 # import helix-py library and default queries
-from helix import Client, Query, Loader
+from helix import Client, Query, Loader, Instance
 from helix.client import hnswinsert, hnswload, hnswsearch
 from typing import Tuple
 
-# setup a connection to a helix-db instance running locally
+# setup a helix-db instance locally on the default port
+helix_instance = Instance()
+
+# setup a connection to a helix-db instance running locally on the default port
 db = Client(local=True)
 
 # load your data from parquet, fvecs, or csv files

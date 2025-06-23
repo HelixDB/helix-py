@@ -59,6 +59,7 @@ Proper docs are coming soon. See `examples/tutorial.py` for now.
 import helix
 from helix.client import hnswload, hnswsearch
 
+helix_instance = helix.Instance()
 db = helix.Client(local=True)
 data = helix.Loader("path/to/data", cols=["vecs"])
 ids = db.query(hnswload(data)) # build hnsw index
