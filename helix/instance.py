@@ -103,6 +103,7 @@ class Instance:
         self.instance_id = [out for out in output if out.startswith("Instance ID:")][0].removeprefix("Instance ID: ").removesuffix(" (running)").removesuffix(" (not running)")
 
         self.ids_running[self.instance_id] = True
+        self.port_ids[self.port] = self.instance_id
 
         # Auto stop instance upon exit
         atexit.register(self.stop)
