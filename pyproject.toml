@@ -9,7 +9,7 @@ packages = ["helix/"]
 helix-py = { workspace = true }
 
 [project]
-version = "0.2.14"
+version = "0.2.15"
 name = "helix-py"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 description = "helix-db python lib + workflows"
@@ -17,16 +17,9 @@ readme = "README.md"
 requires-python = ">=3.9"
 liscense = { file = "LICENSE" }
 dependencies = [
-    "build>=1.2.2.post1",
-    "chonkie[model2vec,st]>=1.0.10",
     "numpy >= 2.0.2",
     "pyarrow >= 19.0.1",
-    "pymupdf4llm>=0.0.25",
-    "requests>=2.32.4",
-    "torch>=2.7.1",
     "tqdm >= 4.67.1",
-    "transformers>=4.52.4",
-    "twine>=6.1.0",
 ]
 
 [project.urls]

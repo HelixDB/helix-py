@@ -6,5 +6,5 @@ from helix.types import Payload, EdgeType, Hnode, Hedge, Hvector, json_to_helix
 from helix.loader import Loader
 from helix.instance import Instance
 
-__version__ = "0.2.14"
+__version__ = "0.2.15"
 
