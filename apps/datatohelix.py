@@ -62,7 +62,7 @@ def convert_to_markdown(path: str, doc_type: str) -> str:
 
     md_convert = None
     if path.endswith(".pdf") and doc_type == "pdf":
-        md_convert = pymupdf4llm.to_markdown(in_pdf)
+        md_convert = pymupdf4llm.to_markdown(path)
     return str(md_convert)
 
 # TODO: future would be cool with some sort of tool call
@@ -70,8 +70,9 @@ def gen_n_and_e(chunks: str):
     prompt = """You are task is to only produce json structured output and nothing else. Do no
         provide any extra commentary or text. Based on the following sentence/s, split it into
         node entities and edge connections by simply defining Node(label) and Edge(label). Only
-        create nodes based on nouns and edges based on adjectives. Try to avoid classifying any
-        useless/fluff words in the chunk of text. Here is an example of what you should produce:
+        create nodes based on people, things, ideas and edges based on adjectives and verbs. Avoid
+        at all costs classifying any useless/fluff parts in the chunk of text. Here is an example
+        of what you should produce:
         {
               "Nodes": [
                 {
@@ -112,7 +113,7 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--chunking_method", help="chunking method (recursive, semantic", default="recursive")
     args = parser.parse_args()
 
-    in_pdf = args.input[0]
+    in_doc = args.input[0]
     doc_type = args.type
     chunking_method = args.chunking_method
 
@@ -125,13 +126,10 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
-    #md_text = convert_to_markdown(in_pdf, doc_type)
-    chunked_text = chunker(sample_text, chunking_method)
+    md_text = convert_to_markdown(in_doc, doc_type)
+    chunked_text = chunker(md_text, chunking_method)
     gened = gen_n_and_e(chunked_text)
     l_nodes_edges = [json_to_helix(gen) for gen in gened]
     for nodes, edges in l_nodes_edges:
         print(nodes, edges)
-
-#[] []
-#[<helix.types.Hnode object at 0x11d693210>, <helix.types.Hnode object at 0x11d690fd0>, <helix.types.Hnode object at 0x11d692490>, <helix.types.Hnode object at 0x11d693f90>, <helix.types.Hnode object at 0x11d693650>, <helix.types.Hnode object at 0x11d6932d0>, <helix.types.Hnode object at 0x11d6a07d0>] [<helix.types.Hedge object at 0x11d6a0750>, <helix.types.Hedge object at 0x11d6a1090>]
 
