@@ -1,6 +1,6 @@
 from helix.instance import Instance
 
-helix_instance = Instance("helixdb-cfg", "6969", verbose=True)
+helix_instance = Instance("helixdb-cfg", 6969, verbose=True)
 print("-" * 70 + '\n')
 
 # Deploy
@@ -32,3 +32,4 @@ print("-" * 70 + '\n')
 print("Should not have any instances:")
 helix_instance.status()
 print("-" * 70 + '\n')
+

@@ -3,40 +3,6 @@ from helix.types import Payload
 from typing import List
 from helix.instance import Instance
 
-helix_instance = Instance("helixdb-cfg", "6969", verbose=True)
-
-# Deploy
-print("\n" + "-"*20 + "DEPLOY TEST" + "-"*20)
-print("Instance should already be running:")
-helix_instance.deploy()
-print("-" * 70 + '\n')
-helix_instance.status()
-print("-" * 70 + '\n')
-
-# Stop
-print("\n" + "-"*20 + "STOP TEST" + "-"*20)
-helix_instance.stop()
-print("-" * 70 + '\n')
-helix_instance.status()
-print("-" * 70 + '\n')
-
-# Start
-print("\n" + "-"*20 + "START TEST" + "-"*20)
-helix_instance.start()
-print("-" * 70 + '\n')
-helix_instance.status()
-print("-" * 70 + '\n')
-
-# Delete
-print("\n" + "-"*20 + "DELETE TEST" + "-"*20)
-helix_instance.delete()
-print("-" * 70 + '\n')
-helix_instance.status()
-print("-" * 70 + '\n')
-
-# Initialize new instance (deployed automatically)
-helix_instance2 = Instance("helixdb-cfg", "6969")
-
 db = Client(local=True, port=6969)
 
 class create_user(Query):
@@ -46,92 +12,92 @@ class create_user(Query):
         self.age = age
         self.email = email
         self.now = now
-    
+
     def query(self) -> List[Payload]:
         return [{"name": self.name, "age": self.age, "email": self.email, "now": self.now}]
-            
+
     def response(self, response):
         return response
 
 class get_users(Query):
     def __init__(self):
         super().__init__()
-    
+
     def query(self) -> List[Payload]:
         return [{}]
-    
+
     def response(self, response):
         return response
-    
+
 class create_follow(Query):
     def __init__(self, follower_id: str, followed_id: str, now: int):
         super().__init__()
         self.follower_id = follower_id
         self.followed_id = followed_id
         self.now = now
-    
+
     def query(self):
         return [{"follower_id": self.follower_id, "followed_id": self.followed_id, "now": self.now}]
-            
-    
+
+
     def response(self, response):
         return response
-    
+
 class create_post(Query):
     def __init__(self, user_id: str, content: str, now: int):
         super().__init__()
         self.user_id = user_id
         self.content = content
         self.now = now
-    
+
     def query(self):
         return [{"user_id": self.user_id, "content": self.content, "now": self.now}]
-            
-    
+
+
     def response(self, response):
         return response
-    
+
 class get_posts(Query):
     def __init__(self):
         super().__init__()
-    
+
     def query(self) -> List[Payload]:
         return [{}]
-    
+
     def response(self, response):
         return response
-    
+
 class get_posts_by_user(Query):
     def __init__(self, user_id: str):
         super().__init__()
         self.user_id = user_id
-    
+
     def query(self) -> List[Payload]:
         return [{"user_id": self.user_id}]
-    
+
     def response(self, response):
         return response
-    
+
 class get_followed_users(Query):
     def __init__(self, user_id: str):
         super().__init__()
         self.user_id = user_id
-    
+
     def query(self) -> List[Payload]:
         return [{"user_id": self.user_id}]
-    
+
     def response(self, response):
         return response
-    
+
 
 class get_followed_users_posts(Query):
     def __init__(self, user_id: str):
         super().__init__()
         self.user_id = user_id
-    
+
     def query(self) -> List[Payload]:
         return [{"user_id": self.user_id}]
-    
+
     def response(self, response):
         return response
 
@@ -185,7 +151,7 @@ print("\n")
 # Create new instance concurrent to existing instance on
 # different port to test functionality with multiple ports
 print("-"*20 + "NEW CONCURRENT INSTANCE TEST" + "-"*20)
-delete_instance = Instance("helixdb-cfg", "6970")
+delete_instance = Instance("helixdb-cfg", 6970)
 print("Should have 2 instances running:")
 print(delete_instance.status())
 print("\n")
@@ -210,4 +176,4 @@ print("\n")
 
 print("Should have 1 instance not running after script ends")
 print("Try running `helix instances` to see")
-print(f"\nRun `helix delete {helix_instance2.instance_id}` to delete the instance\n")
+

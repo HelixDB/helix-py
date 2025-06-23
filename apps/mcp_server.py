@@ -39,8 +39,6 @@ def next(connection_id: str) -> str: return client.query(helix.next(connection_i
 def schema_resource(connection_id: str) -> str:
     return client.query(helix.schema_resource(connection_id))[0]
 
-# TODO: something like a resource to show the schema of the db
-
 @mcp.tool()
 def out_step(connection_id: str, edge_label: str, edge_type: str) -> str:
     tool = "out_step"
