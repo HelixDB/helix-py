@@ -12,9 +12,8 @@ helix-py will soon be built to become a full knowledge graph framework.
 ## Installation
 
 ### Install helix-py
-```bash
-pip install helix-py
-```
+`uv add helix-py` or `pip install helix-py`
+
 See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) for more
 information on installing helix-db
 
