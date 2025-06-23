@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import helix
 from helix import Hnode, Hedge, Hvector, json_to_helix
+from helix.providers import OllamaClient
 from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticChunker
 import pymupdf4llm
 import argparse
@@ -9,6 +9,8 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 import requests
+
+ollama_client = OllamaClient(model="mistral:latest")
 
 """
 embed_model = "albert-base-v2"
@@ -62,48 +64,36 @@ def convert_to_markdown(path: str, doc_type: str) -> str:
 
     md_convert = None
     if path.endswith(".pdf") and doc_type == "pdf":
-        md_convert = pymupdf4llm.to_markdown(in_pdf)
+        md_convert = pymupdf4llm.to_markdown(path)
     return str(md_convert)
 
 # TODO: future would be cool with some sort of tool call
 def gen_n_and_e(chunks: str):
     prompt = """You are task is to only produce json structured output and nothing else. Do no
         provide any extra commentary or text. Based on the following sentence/s, split it into
-        node entities and edge connections by simply defining Node(label) and Edge(label). Only
-        create nodes based on nouns and edges based on adjectives. Try to avoid classifying any
-        useless/fluff words in the chunk of text. Here is an example of what you should produce:
+        node entities and edge connections. Only create nodes based on people, locations,
+        objects, concepts, events, and attributes and edges based on adjectives and verbs
+        related to those nodes. Avoid at allcosts, classifying any useless/fluff parts in the
+        chunk of text. If you deem parts of a text as not relevent or opinionated, do not create
+        nodes or edges for it. Limit the amount of nodes and edges you create. Here is an example
+        of what you should produce:
         {
-              "Nodes": [
+            "Nodes": [
                 {
-                  "Label": "Woman"
+                  "Label": "Marie Curie"
                 }
-              ],
-              "Edges": [
+            ],
+            "Edges": [
                 {
-                  "Label": "Husband-Wife",
-                  "Source": "Woman",
+                  "Label": "Wife",
+                  "Source": "Alice Curie",
                   "Target": "Pierre Curie"
                 }
             ]
         }
         Now do this on this text:
     """
-    return [get_ollama_response(prompt + chunk) for chunk in chunks]
-
-# for now just use ollama, but hook up to openai soon
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
-
-def get_ollama_response(prompt):
-    payload = {
-        "model": "mistral:latest",
-        "prompt": prompt,
-        "stream": False
-    }
-    response = requests.post(OLLAMA_API_URL, json=payload)
-    if response.status_code == 200:
-        return response.json()["response"]
-    else:
-        raise Exception(f"ollama api request failed with status {response.status_code}")
+    return [ollama_client.request(prompt + chunk) for chunk in chunks]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="helix knowledge workflow")
@@ -112,7 +102,7 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--chunking_method", help="chunking method (recursive, semantic", default="recursive")
     args = parser.parse_args()
 
-    in_pdf = args.input[0]
+    in_doc = args.input[0]
     doc_type = args.type
     chunking_method = args.chunking_method
 
@@ -125,13 +115,10 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
-    #md_text = convert_to_markdown(in_pdf, doc_type)
+    #md_text = convert_to_markdown(in_doc, doc_type)
     chunked_text = chunker(sample_text, chunking_method)
-    gened = gen_n_and_e(chunked_text)
+    gened = gen_n_and_e(chunked_text[:3])
     l_nodes_edges = [json_to_helix(gen) for gen in gened]
     for nodes, edges in l_nodes_edges:
         print(nodes, edges)
-
-#[] []
-#[<helix.types.Hnode object at 0x11d693210>, <helix.types.Hnode object at 0x11d690fd0>, <helix.types.Hnode object at 0x11d692490>, <helix.types.Hnode object at 0x11d693f90>, <helix.types.Hnode object at 0x11d693650>, <helix.types.Hnode object at 0x11d6932d0>, <helix.types.Hnode object at 0x11d6a07d0>] [<helix.types.Hedge object at 0x11d6a0750>, <helix.types.Hedge object at 0x11d6a1090>]
 

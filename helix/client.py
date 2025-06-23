@@ -1,6 +1,5 @@
 from helix.loader import Loader
 from helix.types import GHELIX, RHELIX, Payload
-from helix.instance import Instance
 import socket
 import json
 import urllib.request
@@ -10,8 +9,6 @@ from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import tqdm
 import sys
-import atexit
-import time
 
 class Query(ABC):
     def __init__(self, endpoint: Optional[str]=None):
@@ -123,18 +120,13 @@ class schema_resource(Query):
         return response
 
 class Client:
-    def __init__(self, local: bool, port: int=6969, api_endpoint: str="", redeploy: bool=False):
+    def __init__(self, local: bool, port: int=6969, api_endpoint: str=""):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
-        self.instance = Instance("helixdb-cfg", port, verbose=False)
 
         try:
-            self.instance.deploy(redeploy=redeploy)
-            #atexit.register(self.instance.stop)
-
             hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
-            time.sleep(0.1) # Wait for server to spin up TODO: Need better fix
             socket.create_connection((hostname, self.h_server_port), timeout=5)
             print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
         except socket.error:
@@ -167,14 +159,4 @@ class Client:
                 responses.append(None)
 
         return responses
-
-    def terminate(self):
-        if input("Are you sure you want to delete the instance and its data? (y/n): ") == "y":
-            self.instance.delete()
-            atexit.unregister(self.instance.stop)
-            print(f"{GHELIX} Instance deleted", file=sys.stderr)
-        else:
-            self.instance.stop()
-            atexit.unregister(self.instance.stop)
-            print(f"{GHELIX} Instance stopped", file=sys.stderr)
 
