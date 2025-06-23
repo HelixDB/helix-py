@@ -5,39 +5,8 @@ Helix-py is a python library for interacting with [helix-db](https://github.com/
 graph-vector database written in rust.
 This library will make it easy to quickly setup a rag agent with your documents and favorite model.
 
-## Features
-
-### Queries
-helix-py using a pytorch like front-end to creating queries. Like you would define a neural network
-forward pass, you can do the same thing for a helix-db query. We provide some default queries in
-`helix/client.py` to get started with inserting and search vectors, but you can also define you're
-own queries if you plan on doing more complex things. For example, for this hql query
-```sql
-QUERY addUser(name: String, age: I64) =>
-  usr <- AddV<User>({name: name, nge: age})
-  RETURN usr
-```
-you would write
-```python
-class addUser(Query):
-    def __init__(self, user: Tuple[str, int]):
-        super().__init__()
-        self.user = user
-
-    def query(self) -> List[Any]:
-        return [{ "name": self.user[0], "age": self.user[1] }]
-
-    def response(self, response):
-        return response
-```
-for your python script. Make sure that the Query.query method returns a list of objects.
-
-### Loader
-The loader (`helix/loader.py`) currently supports `.parquet`, `.fvecs`, and `.csv` data. Simply pass in the path to your
-file or files and the columns you want to process and the loader does the rest for you and is easy to integrate with
-your queries
-
 ## Installation
+
 ### Install helix-py
 ```bash
 pip install helix-py
@@ -49,40 +18,61 @@ information on installing helix-db
 ```bash
 curl -sSL "https://install.helix-db.com" | bash
 helix install
-helix init
-helix deploy
 ```
 
-## Documentation
-Proper docs are coming soon. See `examples/tutorial.py` for now.
+## Features
+
+### Queries
+helix-py using a pytorch like front-end to creating queries. Like you would define a neural network
+forward pass, you can do the same thing for a helix-db query. We provide some default queries in
+`helix/client.py` to get started with inserting and search vectors, but you can also define you're
+own queries if you plan on doing more complex things. For example, for this hql query
+```sql
+QUERY add_user(name: String, age: I64) =>
+  usr <- AddV<User>({name: name, age: age})
+  RETURN usr
+```
+you would write
+```python
+class add_user(helix.Query):
+    def __init__(self, name: str, age: int):
+        super().__init__()
+        self.name = name
+        self.age = age
+
+    def query(self) -> List[Any]:
+        return [{ "name": self.name, "age": self.age }]
+
+    def response(self, response):
+        return response.get("res")
+```
+for your python script. Make sure that the Query.query method returns a list of objects.
+
+### Client
+To setup a simple `Client` to interface with a running helix instance:
 ```python
 import helix
-from helix.client import hnswload, hnswsearch
+from helix.client import hnswinsert, hnswsearch
 
 db = helix.Client(local=True)
 data = helix.Loader("path/to/data", cols=["vecs"])
-ids = db.query(hnswload(data)) # build hnsw index
+[db.query(hnswinsert(d)) for d in data] # build hnsw index
 
 my_query = [0.32, ..., -1.321]
 nearest = db.query(hnswsearch(my_query)) # query hnsw index
 ```
 
-#### LLM Install for Demo
-For the demo in `examples/rag_demo/` you can also install [Ollama here](https://ollama.com/download)
-to get up and running with a local model.
+### Instance
+To setup a simple `Instance` that automatically starts and stops a helix instance with respect
+to the lifetime of the program, to interface with a `helixdb-cfg` directory you have:
+```python
+from helix.instance import Instance
 
-Just run this after installing ollama. (We used llama3.1:8b, but you can just use whatever you want
-ofcourse.)
-```bash
-ollama serve
-ollama pull llama3.1:8b
+helix_instance = Instance("helixdb-cfg", 6969, verbose=True)
 ```
+and from there you can interact with it like you would with the `Client`
 
-Now you're good to go! See `examples/` for how to use helix-py. See
-`helixdb-queries/queries.hx` for the queries installed with `helix deploy --local`. You can add your own here
-and write corresponding `Query` classes in your python script.
-
-## Getting Started With MCP With Helix
+### MCP
 Helix's custom mcp server backend is built into the db and the `mcp_server.py` server can be used
 to interface with that. To get started with this, you can for example use uv:
 
@@ -93,7 +83,7 @@ cd project
 uv venv && source .venv/bin/activate
 uv add helix-py "mcp[cli]"
 ```
-then for claude-desktop for example add this to
+then for claude-desktop, for example, add this to
 `~/Library/Application Support/Claude/claude_desktop_config.json` adjusting paths of course
 ```json
 {
@@ -102,7 +92,7 @@ then for claude-desktop for example add this to
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/user/helix-py/proect",
+        "/Users/user/helix-py/project",
         "run",
         "mcp_server.py"
       ]
@@ -111,6 +101,11 @@ then for claude-desktop for example add this to
 }
 ```
 
+### Loader
+The loader (`helix/loader.py`) currently supports `.parquet`, `.fvecs`, and `.csv` data. Simply pass in the path to your
+file or files and the columns you want to process and the loader does the rest for you and is easy to integrate with
+your queries
+
 ## License
-helix-py is licensed under the GNU General Public License v3.0 (GPL-3.0).
+helix-py is licensed under the The AGPL (Affero General Public License).
 
