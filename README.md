@@ -1,9 +1,13 @@
 # helix-py
 [Helix-DB](https://github.com/HelixDB/helix-db) | [Homepage](https://www.helix-db.com/) | [Documentation](https://docs.helix-db.com/introduction/overview) | [PyPi](https://pypi.org/project/helix-py/)
 
-Helix-py is a python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
-graph-vector database written in rust.
-This library will make it easy to quickly setup a rag agent with your documents and favorite model.
+helix-py is a python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
+graph-vector database written in rust. With a pytorch-like query interface, it supports vector
+operations and custom queries, ideal for tasks like similarity search and knowledge graph
+construction. This library is meant to extend helix-db to be be more easily used in machine learning
+applications.
+
+helix-py will soon be built to become a full knowledge graph framework.
 
 ## Installation
 
