@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 import requests
 
-ollama_client = OllamaClient(model="mistral:latest")
+ollama_client = OllamaClient(use_history=True, model="mistral:latest")
 
 """
 embed_model = "albert-base-v2"
@@ -116,9 +116,13 @@ if __name__ == '__main__':
     """
 
     #md_text = convert_to_markdown(in_doc, doc_type)
-    chunked_text = chunker(sample_text, chunking_method)
-    gened = gen_n_and_e(chunked_text[:3])
-    l_nodes_edges = [json_to_helix(gen) for gen in gened]
-    for nodes, edges in l_nodes_edges:
-        print(nodes, edges)
+    #chunked_text = chunker(sample_text, chunking_method)
+    #gened = gen_n_and_e(chunked_text[:3])
+    #l_nodes_edges = [json_to_helix(gen) for gen in gened]
+    #for nodes, edges in l_nodes_edges:
+    #    print(nodes, edges)
+
+    while True:
+        prompt = input(">>> ")
+        res = ollama_client.request(prompt, stream=True)
 

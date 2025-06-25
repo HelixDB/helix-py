@@ -11,12 +11,8 @@ helix-py = { workspace = true }
 [project]
 name = "helix-py"
 version = "0.2.15"
-authors = [
-    { name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}
-]
-maintainers = [
-    { name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" },
-]
+authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
+maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }]
 description = "helix-db python lib + workflows"
 readme = "README.md"
 requires-python = ">=3.9"
