@@ -1,32 +1,42 @@
 #!/usr/bin/env python3
-from helix import Hnode, Hedge, Hvector, json_to_helix
+from helix import Hnode, Hedge, json_to_helix
 from helix.providers import OllamaClient
+import helix
 from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticChunker
 import pymupdf4llm
 import argparse
-from typing import List
-import torch
-from transformers import AutoTokenizer, AutoModel
-from tqdm import tqdm
-import requests
 
 ollama_client = OllamaClient(use_history=True, model="mistral:latest")
 
-"""
-embed_model = "albert-base-v2"
-tokenizer = AutoTokenizer.from_pretrained(embed_model)
-model = AutoModel.from_pretrained(embed_model)
+class insert_entity(helix.Query):
+    def __init__(self, label: str):
+        super().__init__()
+        self.label = label
+    def query(self): return [{ "label": self.label }]
+    def response(self, response): return response
 
-def vectorize_text(text) -> List[float]:
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
-    return embedding
+class get_entity(helix.Query):
+    def __init__(self, label: str):
+        super().__init__()
+        self.label = label
+    def query(self): return [{ "label": self.label }]
+    def response(self, response): return response
 
-def vectorize_chunked(chunked: List[str]) -> List[List[float]]:
-    return [vectorize_text(chunk) for chunk in tqdm(chunked)]
-"""
+class insert_relationship(helix.Query):
+    def __init__(self, from_entity_label: str, to_entity_label: str, label: str):
+        super().__init__()
+        self.from_entity_label = from_entity_label
+        self.to_entity_label = to_entity_label
+        self.label = label
+    def query(self): return [{
+        "from_entity_label": self.from_entity_label,
+        "to_entity_label": self.to_entity_label,
+        "label": self.label
+    }]
+    def response(self, response): return response
+
+# func: go through list of nodes and edges to send them to helix
+#   func: some sort of simple way to check if a node already exists
 
 def chunker(text: str, chunk_style: str="recursive", chunk_size: int=100):
     chunked_text = ""
@@ -115,6 +125,14 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
+    db = helix.Client(local=True)
+    res = db.query(insert_entity("poop"))
+    print(res)
+    res = db.query(get_entity("poop"))
+    print(res)
+
+    exit(1)
+
     md_text = convert_to_markdown(in_doc, doc_type)
     chunked_text = chunker(sample_text, chunking_method)
     gened = gen_n_and_e(chunked_text[:3])
@@ -125,4 +143,30 @@ if __name__ == '__main__':
     #while True:
     #    prompt = input(">>> ")
     #    res = ollama_client.request(prompt, stream=True)
+
+"""
+[
+    Hnode(label=Marie Curie, id=None, properties=None),
+    Hnode(label=Physicist, id=None, properties=None),
+    Hnode(label=Chemist, id=None, properties=None),
+    Hnode(label=Nobel Prize Winner, id=None, properties=None),
+    Hnode(label=First Woman to Win a Nobel Prize, id=None, properties=None),
+    Hnode(label=First Person to Win a Nobel Prize Twice, id=None, properties=None),
+    Hnode(label=Only Person to Win a Nobel Prize in Two Scientific Fields, id=None, properties=None)
+]
+[
+    Hedge(label=Is, from=Marie Curie, to=Physicist, type=EdgeType.Node, id=None, properties=None),
+    Hedge(label=Is, from=Marie Curie, to=Chemist, type=EdgeType.Node, id=None, properties=None)
+]
+
+[
+    Hnode(label=Marie Curie, id=None, properties=None),
+    Hnode(label=Pierre Curie, id=None, properties=None),
+    Hnode(label=University of Paris, id=None, properties=None),
+    Hnode(label=Robin Williams, id=None, properties=None)
+]
+[
+    Hedge(label=Held Position at, from=Marie Curie, to=University of Paris, type=EdgeType.Node, id=None, properties=None)
+]
+"""
 
