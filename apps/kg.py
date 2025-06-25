@@ -115,14 +115,14 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
-    #md_text = convert_to_markdown(in_doc, doc_type)
-    #chunked_text = chunker(sample_text, chunking_method)
-    #gened = gen_n_and_e(chunked_text[:3])
-    #l_nodes_edges = [json_to_helix(gen) for gen in gened]
-    #for nodes, edges in l_nodes_edges:
-    #    print(nodes, edges)
+    md_text = convert_to_markdown(in_doc, doc_type)
+    chunked_text = chunker(sample_text, chunking_method)
+    gened = gen_n_and_e(chunked_text[:3])
+    l_nodes_edges = [json_to_helix(gen) for gen in gened]
+    for nodes, edges in l_nodes_edges:
+        print(nodes, edges)
 
-    while True:
-        prompt = input(">>> ")
-        res = ollama_client.request(prompt, stream=True)
+    #while True:
+    #    prompt = input(">>> ")
+    #    res = ollama_client.request(prompt, stream=True)
 
