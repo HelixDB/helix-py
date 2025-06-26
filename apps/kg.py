@@ -2,6 +2,7 @@
 from helix import Hnode, Hedge, json_to_helix
 from helix.providers import OllamaClient
 import helix
+from typing import List
 from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticChunker
 import pymupdf4llm
 import argparse
@@ -34,6 +35,13 @@ class insert_relationship(helix.Query):
         "label": self.label
     }]
     def response(self, response): return response
+
+def insert_n_e(nodes: List[Hnode], edges: List[Hedge]):
+    # go through edges
+    # check from and to nodes
+    # if one or both don't exist, insert them
+    # add edges between them (by label)
+    pass
 
 # func: go through list of nodes and edges to send them to helix
 #   func: some sort of simple way to check if a node already exists
