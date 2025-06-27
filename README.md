@@ -4,7 +4,7 @@
 helix-py is a python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
 graph-vector database written in rust. With a pytorch-like query interface, it supports vector
 operations and custom queries, ideal for tasks like similarity search and knowledge graph
-construction. This library is meant to extend helix-db to be be more easily used in machine learning
+construction. This library is meant to extend helix-db to be more easily used in machine learning
 applications.
 
 helix-py will soon be built to become a full knowledge graph framework. (this will be v0.3.0)
