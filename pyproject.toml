@@ -39,11 +39,14 @@ Issues = "https://github.com/HelixDB/helix-py/issues"
 dev = [
     "build >= 1.2.2.post1",
     "chonkie>=1.0.10",
+    "fastapi>=0.115.14",
     "helix-py",
+    "pydantic>=2.11.7",
     "pymupdf4llm>=0.0.25",
     "torch>=2.7.1",
     "tqdm>=4.67.1",
     "transformers>=4.52.4",
     "twine >= 6.1.0",
+    "uvicorn>=0.34.3",
 ]
 

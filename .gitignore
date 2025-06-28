@@ -9,4 +9,5 @@ dist/
 .venv/
 uv.lock
 testing.py
+test.py
 
