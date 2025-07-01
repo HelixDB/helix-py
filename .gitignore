@@ -9,4 +9,4 @@ dist/
 .venv/
 uv.lock
 testing.py
-
+.DS_Store

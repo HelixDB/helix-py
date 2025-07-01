@@ -1,4 +1,4 @@
-from schema import Schema
+from helix import Schema
 
 schema = Schema()
 

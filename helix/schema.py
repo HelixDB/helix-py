@@ -1,4 +1,3 @@
-import json
 import os
 from pathlib import Path
 from typing import Dict, List
@@ -30,33 +29,29 @@ class Schema:
 
         if not Path(os.path.join(self.helix_dir, self.config_path, Schema.schema_file)).exists():
             self.schema_path = os.path.join(self.helix_dir, self.config_path, Schema.schema_file)
-            with open(self.schema_path, "w") as f:
-                json.dump("", f, indent=4)
+            open(self.schema_path, 'w').close()
             print("Schema file created")
         else:
             self.schema_path = os.path.join(self.helix_dir, self.config_path, Schema.schema_file)
             with open(self.schema_path, "r") as f:
                 schema = f.read()
                 schema = schema.split('\n\n')
-                print(schema)
                 self._read_schema(schema)
                 self._compile()
             print("Schema file loaded")
 
-    def create_node(self, node_type:str, properties:Dict[str, str] = {}):
+    def create_node(self, node_type:str, properties:Dict[str, str] = {}, index:List[str] = []):
         if not isinstance(node_type, str):
             raise TypeError(f"Node type must be a string, got {type(node_type).__name__}")
         if len(node_type) < 1:
             raise ValueError(f"Node type is empty")
         if not isinstance(properties, dict):
             raise TypeError(f"Properties must be a dictionary, got {type(properties).__name__}")
-        if len(properties) < 1:
-            raise ValueError(f"Properties dictionary is empty")
 
-        self.nodes[node_type] = {"properties": properties}
+        self.nodes[node_type] = {"properties": properties, "index": index}
 
-    def update_node(self, node_type:str, properties:Dict[str, str] = {}):
-        self.create_node(node_type, properties)
+    def update_node(self, node_type:str, properties:Dict[str, str] = {}, index:List[str] = []):
+        self.create_node(node_type, properties, index)
 
     def get_nodes(self):
         return self.nodes
@@ -140,12 +135,18 @@ class Schema:
         for vector_type in vector_types:
             self.delete_vector(vector_type)
 
-    def save(self):
+    def clear(self):
+        self.nodes = {}
+        self.edges = {}
+        self.vectors = {}
+        self.output = ""
+
+    def save(self) -> None:
         self._compile()
         with open(self.schema_path, "w") as f:
             f.write(self.output)
 
-    def show_schema(self):
+    def show_schema(self) -> str:
         self._compile()
         print(self.output)
         return self.output
@@ -215,19 +216,36 @@ class Schema:
         node_type = node_str.split("::")[1].split("{")[0].strip()
         
         properties = {}
+        index = []
         for item in node_str.split("{")[1].split("}")[0].strip(",").split(", "):
             item = item.replace(",", "").split(":")
-            properties[item[0].strip()] = item[1].strip()
+            key = item[0].strip()
+            value = item[1].strip()
+
+            if key.startswith("INDEX"):
+                new_key = key.replace("INDEX ", "").strip()
+                index.append(new_key)
+                properties[new_key] = value
+            else:
+                properties[key] = value
         
-        self.create_node(node_type, properties)
+        self.create_node(node_type, properties, index)
 
     def _compile_node(self, node_type, properties):
+        index = properties.get("index", [])
         properties = properties.get("properties", {})
         output = ""
         output += "N::" + node_type + " {\n"
+        for key in index:
+            Schema._check_valid_property(key, properties.get(key))
+            output += "    INDEX " + key + ": " + properties.get(key) + ",\n"
         for key, value in properties.items():
-            Schema._check_valid_property(key, value)
-            output += "    " + key + ": " + value + ",\n"
+            if key not in index:
+                Schema._check_valid_property(key, value)
+                output += "    " + key + ": " + value + ",\n"
+
+        if len(properties) > 0:
+            output = output[:-2] + "\n"
         output += "}\n\n"
 
         self.output += output
@@ -236,25 +254,18 @@ class Schema:
         edge_str = edge_str.replace("\n", "")
         edge_type = edge_str.split("::")[1].split("{")[0].strip()
         properties = {}
-        for item in ''.join(edge_str.split("{")[1:]).split("}")[0].strip(",").split(", "):
-            key = item.replace(",", "").split(":")[0].strip()
-            value = ":".join(item.replace(",", "").split(":")[1:]).strip()
-            if key == "Properties":
-                properties[key] = {}
-                for prop in value.split(", "):
-                    prop_key = prop.split(":")[0].strip()
-                    prop_value = ":".join(prop.split(":")[1:]).strip()
-                    properties[key][prop_key] = prop_value
-            else:
-                properties[key] = value
+        edge_inside = ('{'.join(edge_str.split("{")[1:]).removesuffix("}")).strip(",").split(", ")
+        from_node = edge_inside[0].split(":")[1].strip()
+        to_node = edge_inside[1].split(":")[1].strip()
+        prop_str = ','.join(edge_inside[2:]).replace("Properties: ", "").replace("{", "").replace("}", "")
 
-        from_node = properties.get("From")
-        to_node = properties.get("To")
-        prop_str = properties.get("Properties", {})
-        properties = {}
-
-        for key, value in prop_str.items():
-            properties[key.strip()] = value.strip()
+        for item in prop_str.split(","):
+            item = item.strip()
+            if ':' not in item:
+                continue
+            key = item.split(":")[0].strip()
+            value = item.split(":")[1].strip()
+            properties[key] = value
 
         self.create_edge(edge_type, from_node, to_node, properties)
 
@@ -263,9 +274,9 @@ class Schema:
         to_node = properties.get("to")
         properties = properties.get("properties", {})
 
-        if from_node not in self.nodes:
+        if from_node not in self.nodes and from_node not in self.vectors:
             raise ValueError(f"From node {from_node} does not exist")
-        if to_node not in self.nodes:
+        if to_node not in self.nodes and to_node not in self.vectors:
             raise ValueError(f"To node {to_node} does not exist")
         
         output = ""
@@ -276,6 +287,8 @@ class Schema:
         for key, value in properties.items():
             Schema._check_valid_property(key, value)
             output += "        " + str(key) + ": " + str(value) + ",\n"
+        if len(properties) > 0:
+            output = output[:-2] + "\n"
         output += "    }\n"
         output += "}\n\n"
 
@@ -298,6 +311,8 @@ class Schema:
         for key, value in properties.items():
             Schema._check_valid_property(key, value)
             output += "    " + str(key) + ": " + str(value) + ",\n"
+        if len(properties) > 0:
+            output = output[:-2] + "\n"
         output += "}\n\n"
     
         self.output += output
@@ -310,3 +325,11 @@ class Schema:
             self._compile_edge(edge_type, properties)
         for vector_type, properties in self.vectors.items():
             self._compile_vector(vector_type, properties)
+
+    def __str__(self) -> str:
+        self._compile()
+        return self.output
+
+    def __repr__(self) -> str:
+        return self.__str__()
+        
