@@ -4,10 +4,10 @@
 helix-py is a python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
 graph-vector database written in rust. With a pytorch-like query interface, it supports vector
 operations and custom queries, ideal for tasks like similarity search and knowledge graph
-construction. This library is meant to extend helix-db to be be more easily used in machine learning
+construction. This library is meant to extend helix-db to be more easily used in machine learning
 applications.
 
-helix-py will soon be built to become a full knowledge graph framework.
+helix-py will soon be built to become a full knowledge graph framework. (this will be v0.3.0)
 
 ## Installation
 
@@ -37,7 +37,9 @@ QUERY add_user(name: String, age: I64) =>
 ```
 you would write
 ```python
-class add_user(helix.Query):
+from helix import Query
+
+class add_user(Query):
     def __init__(self, name: str, age: int):
         super().__init__()
         self.name = name
@@ -70,10 +72,20 @@ To setup a simple `Instance` that automatically starts and stops a helix instanc
 to the lifetime of the program, to interface with a `helixdb-cfg` directory you have:
 ```python
 from helix.instance import Instance
-
 helix_instance = Instance("helixdb-cfg", 6969, verbose=True)
 ```
 and from there you can interact with it like you would with the `Client`
+
+### Providers
+We also provide an ollama interface. This will be expanded to include many other providers in the future.
+```python
+from helix.providers import OllamaClient
+ollama_client = OllamaClient(use_history=True, model="mistral:latest")
+
+while True:
+    prompt = input(">>> ")
+    res = ollama_client.request(prompt, stream=True)
+```
 
 ### MCP
 Helix's custom mcp server backend is built into the db and the `mcp_server.py` server can be used

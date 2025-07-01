@@ -1,26 +1,21 @@
-// Start writing your queries here.
-//
-// You can use the schema to help you write your queries.
-//
-// Queries take the form:
-//     QUERY {query name}({input name}: {input type}) =>
-//         {variable} <- {traversal}
-//         RETURN {variable}
-//
-// Example:
-//     QUERY GetUserFriends(user_id: String) =>
-//         friends <- N<User>(user_id)::Out<Knows>
-//         RETURN friends
-//
-//
-// For more information on how to write queries,
-// see the documentation at https://docs.helix-db.com
-// or checkout our GitHub at https://github.com/HelixDB/helix-db
+QUERY insert_entity(label: String) =>
+    node <- AddN<Entity>({ label: label })
+    RETURN node
 
-QUERY hnswinsert(vector: [F64]) =>
-    AddV<Embedding>(vector)
-    RETURN "Success"
+QUERY get_entity(label: String) =>
+    node <- N<Entity>::WHERE(_::{label}::EQ(label))
+    RETURN node
 
-QUERY hnswsearch(query: [F64], k: I32) =>
-    res <- SearchV<Embedding>(query, k)
-    RETURN res
+// todo: multi line param lists
+
+QUERY insert_relationship(
+from_entity_label: String,
+to_entity_label: String,
+label: String) =>
+    from_entity <- N<Entity>::WHERE(_::{label}::EQ(from_entity_label))
+    to_entity <- N<Entity>::WHERE(_::{label}::EQ(to_entity_label))
+    e <- AddE<Relationship>::From(from_entity)::To(to_entity)
+    RETURN e
+
+// get nodes by edge labels
+

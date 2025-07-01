@@ -10,13 +10,9 @@ helix-py = { workspace = true }
 
 [project]
 name = "helix-py"
-version = "0.2.15"
-authors = [
-    { name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}
-]
-maintainers = [
-    { name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" },
-]
+version = "0.2.16"
+authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
+maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }]
 description = "helix-db python lib + workflows"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -30,6 +26,7 @@ keywords = [
 dependencies = [
     "numpy >= 2.0.2",
     "pyarrow >= 19.0.1",
+    "requests>=2.32.4",
     "tqdm >= 4.67.1",
 ]
 
@@ -41,7 +38,15 @@ Issues = "https://github.com/HelixDB/helix-py/issues"
 [dependency-groups]
 dev = [
     "build >= 1.2.2.post1",
+    "chonkie>=1.0.10",
+    "fastapi>=0.115.14",
     "helix-py",
+    "pydantic>=2.11.7",
+    "pymupdf4llm>=0.0.25",
+    "torch>=2.7.1",
+    "tqdm>=4.67.1",
+    "transformers>=4.52.4",
     "twine >= 6.1.0",
+    "uvicorn>=0.34.3",
 ]
 
