@@ -10,7 +10,7 @@ helix-py = { workspace = true }
 
 [project]
 name = "helix-py"
-version = "0.2.16"
+version = "0.2.17"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }]
 description = "helix-db python lib + workflows"

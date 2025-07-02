@@ -7,5 +7,5 @@ from helix.loader import Loader
 from helix.instance import Instance
 from helix.providers import OllamaClient, OpenAIClient
 
-__version__ = "0.2.16"
+__version__ = "0.2.17"
 
