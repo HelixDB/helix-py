@@ -120,10 +120,11 @@ class schema_resource(Query):
         return response
 
 class Client:
-    def __init__(self, local: bool, port: int=6969, api_endpoint: str=""):
+    def __init__(self, local: bool, port: int=6969, api_endpoint: str="", verbose: bool=True):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
+        self.verbose = verbose
 
         try:
             hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
@@ -141,7 +142,7 @@ class Client:
         total = len(query_data) if hasattr(query_data, "__len__") else None
         responses = []
 
-        for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'", file=sys.stderr):
+        for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{ep}'", file=sys.stderr, disable=not self.verbose):
             req_data = json.dumps(d).encode("utf-8")
             try:
                 req = urllib.request.Request(
