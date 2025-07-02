@@ -117,9 +117,26 @@ then for claude-desktop, for example, add this to
 ```
 
 ### Loader
-The loader (`helix/loader.py`) currently supports `.parquet`, `.fvecs`, and `.csv` data. Simply pass in the path to your
-file or files and the columns you want to process and the loader does the rest for you and is easy to integrate with
-your queries
+To dynamically create, load, and edit your Helixdb schema, you can use the `Schema` class.
+To get started, you can create a `schema` instance and optionally pass in the path to your configs file.
+```python
+from helix.loader import Schema
+schema = Schema()
+```
+
+This will either create a new `schema.hx` file if you don't have one, or load the existing one.
+
+To interact with the schema, you can use various methods, including:
+```python
+schema.create_node("User", {"name": "String", "age": "U32"})
+schema.create_edge("Follows", "User", "User")
+schema.create_vector("Vec", {"vec": "Vec32"})
+```
+
+To save the schema to your configs folder, you can use the `save` method.
+```python
+schema.save()
+```
 
 ## License
 helix-py is licensed under the The AGPL (Affero General Public License).
