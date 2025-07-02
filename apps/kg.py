@@ -1,27 +1,39 @@
 #!/usr/bin/env python3
 from helix import Hnode, Hedge, json_to_helix
-from helix.providers import OllamaClient
+from helix.providers import OpenAIClient
 import helix
 from typing import List
 from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticChunker
 import pymupdf4llm
 import argparse
 
-ollama_client = OllamaClient(use_history=True, model="mistral:latest")
+llm_client = OpenAIClient(model="gpt-4o")
+# helix.Instance here
+db_client = helix.Client(local=True)
 
 class insert_entity(helix.Query):
     def __init__(self, label: str):
         super().__init__()
         self.label = label
-    def query(self): return [{ "label": self.label }]
-    def response(self, response): return response
+
+    def query(self):
+        # does  node with this label already exist? if so skip
+        # basically if get_entity(self.label) is None
+        return [{ "label": self.label }]
+
+    def response(self, response):
+        return response
 
 class get_entity(helix.Query):
     def __init__(self, label: str):
         super().__init__()
         self.label = label
-    def query(self): return [{ "label": self.label }]
-    def response(self, response): return response
+
+    def query(self):
+        return [{ "label": self.label }]
+
+    def response(self, response):
+        return response
 
 class insert_relationship(helix.Query):
     def __init__(self, from_entity_label: str, to_entity_label: str, label: str):
@@ -29,22 +41,33 @@ class insert_relationship(helix.Query):
         self.from_entity_label = from_entity_label
         self.to_entity_label = to_entity_label
         self.label = label
-    def query(self): return [{
-        "from_entity_label": self.from_entity_label,
-        "to_entity_label": self.to_entity_label,
-        "label": self.label
-    }]
+
+    def query(self):
+        # first check if both nodes exist
+        return [{
+            "from_entity_label": self.from_entity_label,
+            "to_entity_label": self.to_entity_label,
+            "label": self.label
+        }]
+
+    def response(self, response):
+        return response
+
+class get_ne(helix.Query):
+    def __init__(self): super().__init__()
+    def query(self): return []
     def response(self, response): return response
 
-def insert_n_e(nodes: List[Hnode], edges: List[Hedge]):
-    # go through edges
-    # check from and to nodes
-    # if one or both don't exist, insert them
-    # add edges between them (by label)
-    pass
+def insert_e_r(nodes: List[Hnode], edges: List[Hedge]):
+    for node in nodes:
+        db_client.query(insert_entity(node.label))
 
-# func: go through list of nodes and edges to send them to helix
-#   func: some sort of simple way to check if a node already exists
+    for edge in edges:
+        db_client.query(insert_relationship(
+            edge.label,
+            edge.from_node_label,
+            edge.to_node_label
+        ))
 
 def chunker(text: str, chunk_style: str="recursive", chunk_size: int=100):
     chunked_text = ""
@@ -85,33 +108,38 @@ def convert_to_markdown(path: str, doc_type: str) -> str:
         md_convert = pymupdf4llm.to_markdown(path)
     return str(md_convert)
 
-# TODO: future would be cool with some sort of tool call
 def gen_n_and_e(chunks: str):
     prompt = """You are task is to only produce json structured output and nothing else. Do no
         provide any extra commentary or text. Based on the following sentence/s, split it into
         node entities and edge connections. Only create nodes based on people, locations,
         objects, concepts, events, and attributes and edges based on adjectives and verbs
-        related to those nodes. Avoid at allcosts, classifying any useless/fluff parts in the
+        related to those nodes. Don't put the json in markdown tags either.
+        Avoid at allcosts, classifying any useless/fluff parts in the
         chunk of text. If you deem parts of a text as not relevent or opinionated, do not create
         nodes or edges for it. Limit the amount of nodes and edges you create. Here is an example
         of what you should produce:
         {
             "Nodes": [
                 {
-                  "Label": "Marie Curie"
+                  "Label": "marie curie"
                 }
             ],
             "Edges": [
                 {
-                  "Label": "Wife",
-                  "Source": "Alice Curie",
-                  "Target": "Pierre Curie"
+                  "Label": "wife",
+                  "Source": "alice curie",
+                  "Target": "pierre curie"
                 }
             ]
         }
         Now do this on this text:
     """
-    return [ollama_client.request(prompt + chunk) for chunk in chunks]
+    ret = []
+    for chunk in chunks:
+        res = llm_client.request(prompt + chunk)
+        ret.append(res)
+        print(res)
+    return ret
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="helix knowledge workflow")
@@ -133,10 +161,7 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
-    db = helix.Client(local=True)
-    res = db.query(insert_entity("poop"))
-    print(res)
-    res = db.query(get_entity("poop"))
+    res = db_client.query(get_ne())
     print(res)
 
     exit(1)
@@ -147,34 +172,5 @@ if __name__ == '__main__':
     l_nodes_edges = [json_to_helix(gen) for gen in gened]
     for nodes, edges in l_nodes_edges:
         print(nodes, edges)
-
-    #while True:
-    #    prompt = input(">>> ")
-    #    res = ollama_client.request(prompt, stream=True)
-
-"""
-[
-    Hnode(label=Marie Curie, id=None, properties=None),
-    Hnode(label=Physicist, id=None, properties=None),
-    Hnode(label=Chemist, id=None, properties=None),
-    Hnode(label=Nobel Prize Winner, id=None, properties=None),
-    Hnode(label=First Woman to Win a Nobel Prize, id=None, properties=None),
-    Hnode(label=First Person to Win a Nobel Prize Twice, id=None, properties=None),
-    Hnode(label=Only Person to Win a Nobel Prize in Two Scientific Fields, id=None, properties=None)
-]
-[
-    Hedge(label=Is, from=Marie Curie, to=Physicist, type=EdgeType.Node, id=None, properties=None),
-    Hedge(label=Is, from=Marie Curie, to=Chemist, type=EdgeType.Node, id=None, properties=None)
-]
-
-[
-    Hnode(label=Marie Curie, id=None, properties=None),
-    Hnode(label=Pierre Curie, id=None, properties=None),
-    Hnode(label=University of Paris, id=None, properties=None),
-    Hnode(label=Robin Williams, id=None, properties=None)
-]
-[
-    Hedge(label=Held Position at, from=Marie Curie, to=University of Paris, type=EdgeType.Node, id=None, properties=None)
-]
-"""
+        insert_e_r(nodes, edges)
 

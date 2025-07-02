@@ -40,20 +40,20 @@ class Hedge:
             self,
             label: str,
             properties: Optional[List[Tuple[str,  Any]]],
-            from_node: Hnode,
-            to_node: Hnode,
+            from_node_label: str,
+            to_node_label: str,
             edge_type: EdgeType
     ):
         self.label = label
         self.properties = properties
         self.id: Optional[int] = None
-        self.from_node = from_node
-        self.to_node = to_node
+        self.from_node_label = from_node_label
+        self.to_node_label = to_node_label
         self.edge_type = edge_type
 
     def __str__(self) -> str:
-        return (f"Hedge(label={self.label}, from={self.from_node.label}, "
-                f"to={self.to_node.label}, type={self.edge_type}, id={self.id}, "
+        return (f"Hedge(label={self.label}, from={self.from_node_label}, "
+                f"to={self.to_node_label}, type={self.edge_type}, id={self.id}, "
                 f"properties={self.properties})")
 
     def __repr__(self) -> str:
@@ -110,8 +110,8 @@ def json_to_helix(json_string: str) -> tuple[List[Hnode], List[Hedge]]:
         edge = Hedge(
             label=label,
             properties=None,
-            from_node=from_node,
-            to_node=to_node,
+            from_node_label=from_node.label,
+            to_node_label=to_node.label,
             edge_type=EdgeType.Node
         )
         edges.append(edge)

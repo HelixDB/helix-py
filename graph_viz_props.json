@@ -1,0 +1,153 @@
+{
+    "nodes": [
+        {
+            "id": 1,
+            "label",
+            "Node 1",
+            "title": "Information about Node 1"}
+    ],
+    "edges": [
+        {"from": 1, "to": 2, "label", "Edge from 1 to 2"}
+    ]
+}
+
+{
+  "nodes": [
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Marie Curie"
+        }
+      },
+      "id": "41234206725797534130290041863895516422"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Polish"
+        }
+      },
+      "id": "41234206725813299824580359944256357638"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "naturalised-French"
+        }
+      },
+      "id": "41234206725826586460934612197975524614"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Nobel Prize"
+        }
+      },
+      "id": "41234206725843526290485221891296724230"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "physicist"
+        }
+      },
+      "id": "41234206725850798550401681882807010566"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "chemist"
+        }
+      },
+      "id": "41234206725859189420878771621527291142"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "radioactivity"
+        }
+      },
+      "id": "41234206725865267991986221867952506118"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Pierre Curie"
+        }
+      },
+      "id": "41234206725946265062671680514598110470"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Nobel Prize"
+        }
+      },
+      "id": "41234206725952330536590838427241678086"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "married couple"
+        }
+      },
+      "id": "41234206725964406697598973860183803142"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Curie family"
+        }
+      },
+      "id": "41234206725976506470439523641351996678"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "legacy"
+        }
+      },
+      "id": "41234206725987403700033908296850343174"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "University of Paris"
+        }
+      },
+      "id": "41234206725999461783232851494431884550"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "professor"
+        }
+      },
+      "id": "41234206726011556944387382848212174086"
+    },
+    {
+      "data": {
+        "label": "Entity",
+        "properties": {
+          "label": "Robin Williams"
+        }
+      },
+      "id": "41234206726023612813977037200647521542"
+    }
+  ]
+}
+

@@ -26,10 +26,10 @@ helix_instance.status()
 print("-" * 70 + '\n')
 
 # Delete
-print("\n" + "-"*20 + "DELETE" + "-"*20)
-helix_instance.delete()
-print("-" * 70 + '\n')
-print("Should not have any instances:")
-helix_instance.status()
-print("-" * 70 + '\n')
+#print("\n" + "-"*20 + "DELETE" + "-"*20)
+#helix_instance.delete()
+#print("-" * 70 + '\n')
+#print("Should not have any instances:")
+#helix_instance.status()
+#print("-" * 70 + '\n')
 
