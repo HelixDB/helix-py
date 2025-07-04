@@ -186,7 +186,6 @@ class Client:
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                print(req_data)
 
                 with urllib.request.urlopen(req) as response:
                     if response.getcode() == 200:
