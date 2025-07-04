@@ -6,48 +6,49 @@ from typing import List
 from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticChunker
 import pymupdf4llm
 import argparse
+import json
 
 llm_client = OpenAIClient(model="gpt-4o")
 # helix.Instance here
 db_client = helix.Client(local=True)
 
 class insert_entity(helix.Query):
-    def __init__(self, label: str):
+    def __init__(self, entity_name: str):
         super().__init__()
-        self.label = label
+        self.entity_name = entity_name
 
     def query(self):
-        # does  node with this label already exist? if so skip
-        # basically if get_entity(self.label) is None
-        return [{ "label": self.label }]
+        # does  node with this entity_name already exist? if so skip
+        # basically if get_entity(self.entity_name) is None
+        return [{ "entity_name_in": self.entity_name }]
 
     def response(self, response):
         return response
 
 class get_entity(helix.Query):
-    def __init__(self, label: str):
+    def __init__(self, entity_name: str):
         super().__init__()
-        self.label = label
+        self.entity_name = entity_name
 
     def query(self):
-        return [{ "label": self.label }]
+        return [{ "entity_name_in": self.entity_name }]
 
     def response(self, response):
         return response
 
 class insert_relationship(helix.Query):
-    def __init__(self, from_entity_label: str, to_entity_label: str, label: str):
+    def __init__(self, from_entity_label: str, to_entity_label: str, edge_name: str):
         super().__init__()
         self.from_entity_label = from_entity_label
         self.to_entity_label = to_entity_label
-        self.label = label
+        self.edge_name = edge_name
 
     def query(self):
         # first check if both nodes exist
         return [{
             "from_entity_label": self.from_entity_label,
             "to_entity_label": self.to_entity_label,
-            "label": self.label
+            "edge_name_in": self.edge_name
         }]
 
     def response(self, response):
@@ -55,8 +56,8 @@ class insert_relationship(helix.Query):
 
 class get_ne(helix.Query):
     def __init__(self): super().__init__()
-    def query(self): return []
-    def response(self, response): return response
+    def query(self): return [{}]
+    def response(self, response): return json.loads(response)
 
 def insert_e_r(nodes: List[Hnode], edges: List[Hedge]):
     for node in nodes:
@@ -152,6 +153,10 @@ if __name__ == '__main__':
     doc_type = args.type
     chunking_method = args.chunking_method
 
+    #res = db_client.query(get_ne())
+    #print(res)
+    #exit(1)
+
     # testing
     sample_text = """
         Marie Curie, 7 November 1867 – 4 July 1934, was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.
@@ -161,11 +166,6 @@ if __name__ == '__main__':
         Also, Robin Williams.
     """
 
-    res = db_client.query(get_ne())
-    print(res)
-
-    exit(1)
-
     md_text = convert_to_markdown(in_doc, doc_type)
     chunked_text = chunker(sample_text, chunking_method)
     gened = gen_n_and_e(chunked_text[:3])
@@ -174,3 +174,30 @@ if __name__ == '__main__':
         print(nodes, edges)
         insert_e_r(nodes, edges)
 
+    #for nodes, _ in l_nodes_edges:
+    #    for node in nodes:
+    #        res = db_client.query(get_entity(node.label))
+    #        print(res)
+
+
+
+"""
+needed format for pyvis:
+
+{
+    "nodes": [
+        {
+            "id": 1,
+            "label": "Node 1"
+        }
+    ],
+    "edges": [
+        {
+            "from": 1,
+            "to": 2,
+            "label": "Edge from 1 to 2"
+        }
+    ]
+}
+
+"""

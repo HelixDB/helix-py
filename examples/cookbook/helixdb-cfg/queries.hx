@@ -18,7 +18,6 @@ QUERY get_users() =>
     users <- N<User>
     RETURN users
 
-
 QUERY get_posts() =>
     posts <- N<Post>
     RETURN posts

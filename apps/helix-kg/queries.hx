@@ -1,19 +1,17 @@
-QUERY insert_entity(label: String) =>
-    node <- AddN<Entity>({ label: label })
+QUERY insert_entity(entity_name_in: String) =>
+    node <- AddN<Entity>({ entity_name: entity_name_in })
     RETURN node
 
-QUERY get_entity(label: String) =>
-    node <- N<Entity>::WHERE(_::{label}::EQ(label))
+QUERY get_entity(entity_name_in: String) =>
+    node <- N<Entity>({entity_name: entity_name_in})
     RETURN node
-
-//QUERY delete_entity(label: String) =>
 
 QUERY insert_relationship(
 from_entity_label: String,
 to_entity_label: String,
-label: String) =>
-    from_entity <- N<Entity>::WHERE(_::{label}::EQ(from_entity_label))
-    to_entity <- N<Entity>::WHERE(_::{label}::EQ(to_entity_label))
-    e <- AddE<Relationship>::From(from_entity)::To(to_entity)
+edge_name_in: String) =>
+    from_entity <- N<Entity>({entity_name: from_entity_label})
+    to_entity <- N<Entity>({entity_name: to_entity_label})
+    e <- AddE<Relationship>({ edge_name: edge_name_in })::From(from_entity)::To(to_entity)
     RETURN e
 

@@ -62,7 +62,6 @@ class Hedge:
 class Hvector(Hnode):
     def __init__(
             self,
-            #id
             label: str,
             vector: List[float],
             properties: Optional[List[Tuple[str,  Any]]]
@@ -76,6 +75,9 @@ class Hvector(Hnode):
     def __repr__(self) -> str:
         return self.__str__()
 
+# here label pertains to a property and not the actual helix label stored
+#   in the db. checkout apps/kg.py as to how it's used. the actual helix
+#   label is something like "Entity" or "Relationship" (not in properties)
 def json_to_helix(json_string: str) -> tuple[List[Hnode], List[Hedge]]:
     try:
         json_data = json.loads(json_string)
