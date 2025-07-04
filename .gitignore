@@ -11,4 +11,6 @@ uv.lock
 testing.py
 test.py
 .DS_Store
+graph.html
+lib/
 

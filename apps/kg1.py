@@ -7,6 +7,7 @@ from chonkie import RecursiveRules, RecursiveLevel, RecursiveChunker, SemanticCh
 import pymupdf4llm
 import argparse
 import json
+import time
 
 llm_client = OpenAIClient(model="gpt-4o")
 # helix.Instance here
@@ -44,7 +45,6 @@ class insert_relationship(helix.Query):
         self.edge_name = edge_name
 
     def query(self):
-        # first check if both nodes exist
         return [{
             "from_entity_label": self.from_entity_label,
             "to_entity_label": self.to_entity_label,
@@ -65,9 +65,9 @@ def insert_e_r(nodes: List[Hnode], edges: List[Hedge]):
 
     for edge in edges:
         db_client.query(insert_relationship(
-            edge.label,
-            edge.from_node_label,
-            edge.to_node_label
+            str(edge.from_node_label),
+            str(edge.to_node_label),
+            str(edge.label),
         ))
 
 def chunker(text: str, chunk_style: str="recursive", chunk_size: int=100):
@@ -153,9 +153,9 @@ if __name__ == '__main__':
     doc_type = args.type
     chunking_method = args.chunking_method
 
-    #res = db_client.query(get_ne())
-    #print(res)
-    #exit(1)
+    res = db_client.query(get_ne())
+    print(res)
+    exit(1)
 
     # testing
     sample_text = """
@@ -173,13 +173,6 @@ if __name__ == '__main__':
     for nodes, edges in l_nodes_edges:
         print(nodes, edges)
         insert_e_r(nodes, edges)
-
-    #for nodes, _ in l_nodes_edges:
-    #    for node in nodes:
-    #        res = db_client.query(get_entity(node.label))
-    #        print(res)
-
-
 
 """
 needed format for pyvis:
