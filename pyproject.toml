@@ -25,6 +25,7 @@ keywords = [
 ]
 dependencies = [
     "numpy >= 2.0.2",
+    "pip>=25.1.1",
     "pyarrow >= 19.0.1",
     "requests>=2.32.4",
     "tqdm >= 4.67.1",
@@ -37,10 +38,12 @@ Issues = "https://github.com/HelixDB/helix-py/issues"
 
 [dependency-groups]
 dev = [
+    "jinja2>=3.1.6",
+    "pyvis>=0.3.2",
+    "spacy>=3.8.7",
     "build >= 1.2.2.post1",
     "chonkie>=1.0.10",
     "fastapi>=0.115.14",
-    "helix-py",
     "pydantic>=2.11.7",
     "pymupdf4llm>=0.0.25",
     "torch>=2.7.1",
@@ -48,5 +51,6 @@ dev = [
     "transformers>=4.52.4",
     "twine >= 6.1.0",
     "uvicorn>=0.34.3",
+    "helix-py",
 ]
 
