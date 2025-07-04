@@ -62,32 +62,6 @@ for post in client.query("get_followed_users_posts", {"user_id": user1_id})[0]['
     print(post)
 print("\n")
 
-# Create new instance concurrent to existing instance on
-# different port to test functionality with multiple ports
-print("-"*20 + "NEW CONCURRENT INSTANCE TEST" + "-"*20)
-delete_instance = Instance("helixdb-cfg", 6970)
-print("Should have 2 instances running:")
-print(delete_instance.status())
-print("\n")
-
-print("-"*20 + "STOP TEST" + "-"*20)
-delete_instance.stop()
-print("Should have 1 instance running 1 not running:")
-print(delete_instance.status())
-print("\n")
-
-print("-"*20 + "START TEST" + "-"*20)
-delete_instance.start()
-print("Should have 2 instances running:")
-print(delete_instance.status())
-print("\n")
-
-print("-"*20 + "DELETE TEST" + "-"*20)
-delete_instance.delete()
-print("Should only have 1 instance running:")
-print(delete_instance.status())
-print("\n")
-
 print("Should have 1 instance not running after script ends")
 print("Try running `helix instances` to see")
 
