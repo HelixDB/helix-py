@@ -8,6 +8,7 @@ from typing import List, Optional, Any
 from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import tqdm
+from functools import singledispatchmethod
 import sys
 
 class Query(ABC):
@@ -136,7 +137,12 @@ class Client:
     def _construct_full_url(self, endpoint: str) -> str:
         return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
 
-    def query(self, query:str, payload:Payload|List[Payload]) -> List[Any]:
+    @singledispatchmethod
+    def query(self, query, payload):
+        pass
+
+    @query.register
+    def _(self, query:str, payload:Payload|List[Payload]) -> List[Any]:
         full_endpoint = self._construct_full_url(query)
         total = len(payload) if isinstance(payload, list) else 1
         payload = payload if isinstance(payload, list) else [payload]
@@ -156,6 +162,34 @@ class Client:
                 with urllib.request.urlopen(req) as response:
                     if response.getcode() == 200:
                         responses.append(json.loads(response.read().decode("utf-8")))
+            except (urllib.error.URLError, urllib.error.HTTPError) as e:
+                error_body = e.read().decode('utf-8').strip('\n')
+                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
+                print(error_body, file=sys.stderr) if self.verbose else None
+                responses.append(None)
+
+        return responses
+
+    @query.register
+    def _(self, query: Query, payload=None) -> List[Any]:
+        query_data = query.query()
+        full_endpoint = self._construct_full_url(query.endpoint)
+        total = len(query_data) if hasattr(query_data, "__len__") else None
+        responses = []
+
+        for d in tqdm(query_data, total=total, desc=f"{GHELIX} Querying '{full_endpoint}'", file=sys.stderr, disable=not self.verbose):
+            req_data = json.dumps(d).encode("utf-8")
+            try:
+                req = urllib.request.Request(
+                    full_endpoint,
+                    data=req_data,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+
+                with urllib.request.urlopen(req) as response:
+                    if response.getcode() == 200:
+                        responses.append(query.response(json.loads(response.read().decode("utf-8"))))
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
                 error_body = e.read().decode('utf-8').strip('\n')
                 print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
