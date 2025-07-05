@@ -19,9 +19,11 @@ class insert_entity(helix.Query):
         self.entity_name = entity_name
 
     def query(self):
-        # does  node with this entity_name already exist? if so skip
-        # basically if get_entity(self.entity_name) is None
+        #exists = db_client.query(get_entity(self.entity_name))
+        #if not exists:
         return [{ "entity_name_in": self.entity_name }]
+        #else:
+        #    return []
 
     def response(self, response):
         return response
@@ -35,7 +37,7 @@ class get_entity(helix.Query):
         return [{ "entity_name_in": self.entity_name }]
 
     def response(self, response):
-        return response
+        return response.get("node")
 
 class insert_relationship(helix.Query):
     def __init__(self, from_entity_label: str, to_entity_label: str, edge_name: str):
@@ -153,17 +155,12 @@ if __name__ == '__main__':
     doc_type = args.type
     chunking_method = args.chunking_method
 
-    res = db_client.query(get_ne())
-    print(res)
-    exit(1)
-
     # testing
     sample_text = """
-        Marie Curie, 7 November 1867 – 4 July 1934, was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.
-        She was the first woman to win a Nobel Prize, the first person to win a Nobel Prize twice, and the only person to win a Nobel Prize in two scientific fields.
-        Her husband, Pierre Curie, was a co-winner of her first Nobel Prize, making them the first-ever married couple to win the Nobel Prize and launching the Curie family legacy of five Nobel Prizes.
-        She was, in 1906, the first woman to become a professor at the University of Paris.
-        Also, Robin Williams.
+        Marie Curie, born on 7 November 1867 in Warsaw, Poland, was a brilliant physicist and chemist whose curiosity and perseverance changed the course of science. From a young age, Marie displayed an insatiable hunger for knowledge. Despite the limitations placed on women in education at the time, she pursued her studies with determination, eventually moving to Paris to attend the Sorbonne. There, she immersed herself in physics and mathematics, often studying late into the night, sustained only by her passion and the occasional crust of bread.
+        It was at the Sorbonne that she met Pierre Curie, a quiet but brilliant physicist with whom she would form both a romantic and scientific partnership. Their shared fascination with the invisible forces of nature—particularly magnetism and radioactivity—brought them together. They married in 1895 and began working side by side in a makeshift laboratory, often in difficult and even dangerous conditions. In 1903, their tireless efforts led to the discovery of two new radioactive elements, polonium and radium, earning them, along with Henri Becquerel, the Nobel Prize in Physics. It was the first Nobel ever awarded to a woman.
+        Tragedy struck in 1906 when Pierre was killed in a street accident. Grief-stricken but resolute, Marie took over his teaching position, becoming the first female professor at the University of Paris. She continued their work on radioactivity, eventually isolating radium in its pure form. Her pioneering research earned her a second Nobel Prize in 1911—this time in Chemistry—making her the first person to win Nobel Prizes in two different scientific fields. Her legacy of scientific excellence would continue through her children and grandchildren, with the Curie family ultimately earning five Nobel Prizes.
+        And then, there was Robin Williams. A century later, in a very different field, his contagious energy and quicksilver wit lit up the world in a way that echoes Marie Curie's radiance—figuratively speaking. Though their lives couldn’t have been more different, Williams once joked during a stand-up set that Marie Curie must have been "the original glow stick," unknowingly blending comedy with an obscure nod to science. It’s easy to imagine that, had their paths somehow crossed across time and space, Robin would have found a way to make Marie laugh, while she would have quietly corrected his terminology—before handing him a lead apron, just in case.
     """
 
     md_text = convert_to_markdown(in_doc, doc_type)
@@ -174,23 +171,3 @@ if __name__ == '__main__':
         print(nodes, edges)
         insert_e_r(nodes, edges)
 
-"""
-needed format for pyvis:
-
-{
-    "nodes": [
-        {
-            "id": 1,
-            "label": "Node 1"
-        }
-    ],
-    "edges": [
-        {
-            "from": 1,
-            "to": 2,
-            "label": "Edge from 1 to 2"
-        }
-    ]
-}
-
-"""
