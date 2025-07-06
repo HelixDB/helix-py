@@ -138,11 +138,11 @@ class Client:
         return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
 
     @singledispatchmethod
-    def query(self, query, payload):
+    def query(self, query, payload) -> List[Any]:
         pass
 
     @query.register
-    def _(self, query:str, payload:Payload|List[Payload]) -> List[Any]:
+    def _(self, query: str, payload: Payload|List[Payload]) -> List[Any]:
         full_endpoint = self._construct_full_url(query)
         total = len(payload) if isinstance(payload, list) else 1
         payload = payload if isinstance(payload, list) else [payload]
@@ -158,7 +158,7 @@ class Client:
 
         return self._send_reqs(query_data, total, full_endpoint, query)
 
-    def _send_reqs(self, data, total, endpoint, query:Query=None):
+    def _send_reqs(self, data, total, endpoint, query: Optional[Query]=None):
         responses = []
         for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not self.verbose):
             req_data = json.dumps(d).encode("utf-8")
@@ -177,9 +177,8 @@ class Client:
                         else:
                             responses.append(json.loads(response.read().decode("utf-8")))
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                error_body = e.read().decode('utf-8').strip('\n')
-                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
-                print(error_body, file=sys.stderr) if self.verbose else None
+                print(f"{RHELIX} Query failed: {e}", file=sys.stderr) if self.verbose else None
                 responses.append(None)
 
         return responses
+
