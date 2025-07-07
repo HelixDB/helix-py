@@ -177,7 +177,7 @@ class Client:
                         else:
                             responses.append(json.loads(response.read().decode("utf-8")))
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                print(f"{RHELIX} Query failed: {e}", file=sys.stderr) if self.verbose else None
+                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
                 responses.append(None)
 
         return responses
