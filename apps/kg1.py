@@ -125,6 +125,6 @@ if __name__ == '__main__':
         gened = json.load(file)
     l_nodes_edges = [json_to_helix(json.dumps(gened))]
     for nodes, edges in l_nodes_edges:
-        print(nodes, edges)
+        #print(nodes, edges)
         insert_e_r(nodes, edges)
 
