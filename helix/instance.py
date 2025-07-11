@@ -7,6 +7,15 @@ import sys
 import atexit
 
 class Instance:
+    """
+    A class for managing Helix instances.
+
+    Args:
+        config_path (str): The path to the configuration file.
+        port (int): The port to use for the Helix server.
+        redeploy (bool): Whether to redeploy the Helix instance or not.
+        verbose (bool): Whether to print verbose output or not.
+    """
     def __init__(self, config_path: str="helixdb-cfg", port: int=6969, redeploy: bool=False, verbose: bool=False):
         self.config_path = config_path
         self.port = str(port)
@@ -54,6 +63,12 @@ class Instance:
         self.deploy(redeploy=redeploy)
 
     def deploy(self, redeploy: bool=False):
+        """
+        Deploy the Helix instance.
+
+        Args:
+            redeploy (bool): Whether to redeploy the Helix instance or not.
+        """
         if self.instance_id or self.port in self.port_ids:
             if redeploy:
                 return self.redeploy()
@@ -102,6 +117,9 @@ class Instance:
         return '\n'.join(output)
 
     def redeploy(self):
+        """
+        Redeploy the Helix instance.
+        """
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance not found")
 
@@ -132,6 +150,9 @@ class Instance:
         return '\n'.join(output)
 
     def start(self):
+        """
+        Start the Helix instance.
+        """
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance not found")
 
@@ -160,6 +181,9 @@ class Instance:
         return '\n'.join(output)
 
     def stop(self):
+        """
+        Stop the Helix instance.
+        """
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance ID not found")
 
@@ -187,6 +211,9 @@ class Instance:
         return '\n'.join(output)
 
     def delete(self):
+        """
+        Delete the Helix instance.
+        """
         if not self.instance_id or self.instance_id not in self.ids_running:
             raise Exception(f"{RHELIX} Instance ID not found")
 
@@ -212,6 +239,9 @@ class Instance:
         return '\n'.join(output)
 
     def status(self):
+        """
+        Get the status of the Helix instance.
+        """
         if self.verbose: print(f"{GHELIX} Helix instances status:", file=sys.stderr)
         cmd = ['helix', 'instances']
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)

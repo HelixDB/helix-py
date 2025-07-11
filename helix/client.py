@@ -12,6 +12,9 @@ from functools import singledispatchmethod
 import sys
 
 class Query(ABC):
+    """
+    A base class for all queries.
+    """
     def __init__(self, endpoint: Optional[str]=None):
         self.endpoint = endpoint or self.__class__.__name__
 
@@ -121,6 +124,15 @@ class schema_resource(Query):
         return response
 
 class Client:
+    """
+    A client for interacting with the Helix server.
+
+    Args:
+        local (bool): Whether to use the local Helix server or not.
+        port (int, optional): The port to use for the Helix server. Defaults to 6969.
+        api_endpoint (str, optional): The API endpoint to use for the Helix server.
+        verbose (bool, optional): Whether to print verbose output or not. Defaults to True.
+    """
     def __init__(self, local: bool, port: int=6969, api_endpoint: str="", verbose: bool=True):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
@@ -139,10 +151,25 @@ class Client:
 
     @singledispatchmethod
     def query(self, query, payload) -> List[Any]:
+        """
+        This is a dispatcher method that handles different types of queries.
+        For the standard query method, it takes a string and a payload.
+        For the custom query method, it takes a Query object.
+        """
         pass
 
     @query.register
     def _(self, query: str, payload: Payload|List[Payload]) -> List[Any]:
+        """
+        Query the helix server with a string and a payload.
+
+        Args:
+            query (str): The query string.
+            payload (Payload|List[Payload]): The payload to send with the query.
+
+        Returns:
+            List[Any]: The response from the helix server.
+        """
         full_endpoint = self._construct_full_url(query)
         total = len(payload) if isinstance(payload, list) else 1
         payload = payload if isinstance(payload, list) else [payload]
@@ -152,6 +179,16 @@ class Client:
 
     @query.register
     def _(self, query: Query, payload=None) -> List[Any]:
+        """
+        Query the helix server with a Query object.
+
+        Args:
+            query (Query): The Query object to send with the query.
+            payload (Any, optional): The payload to send with the query. Defaults to None.
+
+        Returns:
+            List[Any]: The response from the helix server.
+        """
         query_data = query.query()
         full_endpoint = self._construct_full_url(query.endpoint)
         total = len(query_data) if hasattr(query_data, "__len__") else None
@@ -159,6 +196,18 @@ class Client:
         return self._send_reqs(query_data, total, full_endpoint, query)
 
     def _send_reqs(self, data, total, endpoint, query: Optional[Query]=None):
+        """
+        Send requests to the helix server.
+
+        Args:
+            data (List[Any]): The data to send.
+            total (int, optional): The total number of requests to send. Defaults to None.
+            endpoint (str): The endpoint to send the requests to.
+            query (Query, optional): The Query object to send with the requests. Defaults to None.
+
+        Returns:
+            List[Any]: The response from the helix server.
+        """
         responses = []
         for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not self.verbose):
             req_data = json.dumps(d).encode("utf-8")

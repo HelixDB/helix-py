@@ -3,6 +3,14 @@ import json
 import os
 
 class OllamaClient:
+    """
+    A class for interacting with Ollama.
+
+    Args:
+        use_history (bool): Whether to use the conversation history or not.
+        api_url (str): The URL of the Ollama API.
+        model (str): The model to use.
+    """
     def __init__(
             self,
             use_history=False,
@@ -16,6 +24,9 @@ class OllamaClient:
         self._check_model_exists()
 
     def _check_model_exists(self):
+        """
+        Check if the model exists.
+        """
         try:
             response = requests.get(f"{self.api_url.replace('/chat', '/tags')}")
             if response.status_code == 200:
@@ -28,13 +39,26 @@ class OllamaClient:
             raise Exception(f"Error checking model: {str(e)}")
 
     def enable_history(self):
+        """
+        Enable the conversation history.
+        """
         self.use_history = True
 
     def disable_history(self):
+        """
+        Disable the conversation history.
+        """
         self.use_history = False
         self.history = []
 
     def request(self, prompt, stream=False):
+        """
+        Send a request to the Ollama server.
+
+        Args:
+            prompt (str): The prompt to send.
+            stream (bool): Whether to stream the response or not.
+        """
         if self.use_history:
             self.history.append({"role": "user", "content": prompt})
             payload = {
@@ -80,12 +104,27 @@ class OllamaClient:
                 raise Exception(f"Ollama API request failed with status {response.status_code}")
 
     def parse_response(self, response_data):
+        """
+        Parse the response from the Ollama server.
+
+        Args:
+            response_data (dict): The response data from the Ollama server.
+        """
         if "message" in response_data and "content" in response_data["message"]:
             return response_data["message"]["content"]
         else:
             raise ValueError("Invalid response format: 'message' or 'content' key not found")
 
 class OpenAIClient:
+    """
+    A class for interacting with OpenAI API.
+
+    Args:
+        api_key (str): The API key for OpenAI.
+        use_history (bool): Whether to use the conversation history or not.
+        api_url (str): The URL of the OpenAI API.
+        model (str): The model to use.
+    """
     def __init__(
             self,
             api_key=None,
@@ -107,6 +146,9 @@ class OpenAIClient:
         self._check_model_exists()
 
     def _check_model_exists(self):
+        """
+        Check if the model exists.
+        """
         try:
             headers = {"Authorization": f"Bearer {self.api_key}"}
             response = requests.get("https://api.openai.com/v1/models", headers=headers)
@@ -120,13 +162,26 @@ class OpenAIClient:
             raise Exception(f"Error checking model: {str(e)}")
 
     def enable_history(self):
+        """
+        Enable the conversation history.
+        """
         self.use_history = True
 
     def disable_history(self):
+        """
+        Disable the conversation history.
+        """
         self.use_history = False
         self.history = []
 
     def request(self, prompt, stream=False):
+        """
+        Send a request to the OpenAI API.
+
+        Args:
+            prompt (str): The prompt to send.
+            stream (bool): Whether to stream the response or not.
+        """
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         if self.use_history:
             self.history.append({"role": "user", "content": prompt})
@@ -179,6 +234,12 @@ class OpenAIClient:
                 raise Exception(f"OpenAI API request failed with status {response.status_code}")
 
     def parse_response(self, response_data):
+        """
+        Parse the response from the OpenAI API.
+
+        Args:
+            response_data (dict): The response data from the OpenAI API.
+        """
         if "choices" in response_data and len(response_data["choices"]) > 0:
             choice = response_data["choices"][0]
             if "delta" in choice and "content" in choice["delta"]:
@@ -188,6 +249,16 @@ class OpenAIClient:
         return ""
 
     def get_embedding(self, text, model="text-embedding-3-small"):
+        """
+        Get an embedding for the given text.
+
+        Args:
+            text (str): The text to get an embedding for.
+            model (str): The model to use.
+
+        Returns:
+            list: The embedding for the given text.
+        """
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         payload = {"input": text, "model": model}
         response = requests.post(self.embedding_url, json=payload, headers=headers)
