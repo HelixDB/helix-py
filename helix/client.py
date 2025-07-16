@@ -138,7 +138,7 @@ class Client:
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://0.0.0.0" if local else self.h_server_api_endpoint
         self.verbose = verbose
-        self.local
+        self.local = local
 
         try:
             if local:
