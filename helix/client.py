@@ -140,13 +140,13 @@ class Client:
         self.verbose = verbose
         self.local = local
 
-        try:
-            if local:
+        if local:
+            try:
                 hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
                 socket.create_connection((hostname, self.h_server_port), timeout=5)
                 print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
-        except socket.error:
-            raise Exception(f"{RHELIX} No helix server found at '{self.h_server_url}:{self.h_server_port}'")
+            except socket.error:
+                raise Exception(f"{RHELIX} No helix server found at '{self.h_server_url}:{self.h_server_port}'")
 
     def _construct_full_url(self, endpoint: str) -> str:
         if self.local:
