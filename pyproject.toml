@@ -8,6 +8,11 @@ packages = ["helix/"]
 [tool.uv.sources]
 helix-py = { workspace = true }
 
+[tool.uv.workspace]
+members = [
+    "project",
+]
+
 [project]
 name = "helix-py"
 version = "0.2.20"

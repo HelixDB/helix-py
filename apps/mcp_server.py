@@ -21,6 +21,7 @@
 }
 """
 
+from tools_loader import load_tools_from_directory
 from mcp.server.fastmcp import FastMCP
 import helix
 from typing import Optional, Tuple, List
@@ -162,6 +163,10 @@ def filter_items(
     response = client.query(helix.call_tool(payload))
     print(f"res {response}", file=sys.stderr)
     return response[0]
+
+
+# Load additional tools
+load_tools_from_directory(mcp, client)
 
 if __name__ == "__main__":
     mcp.run()
