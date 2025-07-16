@@ -136,18 +136,23 @@ class Client:
     def __init__(self, local: bool, port: int=6969, api_endpoint: str="", verbose: bool=True):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
-        self.h_server_url = "http://0.0.0.0" if local else ("https://api.helix-db.com/" + self.h_server_api_endpoint)
+        self.h_server_url = "http://0.0.0.0" if local else self.h_server_api_endpoint
         self.verbose = verbose
+        self.local
 
         try:
-            hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
-            socket.create_connection((hostname, self.h_server_port), timeout=5)
-            print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
+            if local:
+                hostname = self.h_server_url.replace("http://", "").replace("https://", "").split("/")[0]
+                socket.create_connection((hostname, self.h_server_port), timeout=5)
+                print(f"{GHELIX} Helix instance found at '{self.h_server_url}:{self.h_server_port}'", file=sys.stderr)
         except socket.error:
             raise Exception(f"{RHELIX} No helix server found at '{self.h_server_url}:{self.h_server_port}'")
 
     def _construct_full_url(self, endpoint: str) -> str:
-        return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
+        if self.local:
+            return f"{self.h_server_url}:{self.h_server_port}/{endpoint}"
+        else:
+            return f"{self.h_server_url}/{endpoint}"
 
     @singledispatchmethod
     def query(self, query, payload) -> List[Any]:
