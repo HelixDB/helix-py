@@ -9,6 +9,7 @@
         "secondary_indices": []
     },
     "db_max_size_gb": 10,
-    "mcp": true
+    "mcp": true,
+    "bm25": true
 }
 
