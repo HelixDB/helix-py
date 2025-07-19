@@ -97,8 +97,6 @@ class Instance:
         if self.port: cmd.extend(['--port', self.port])
         if redeploy: cmd.extend(['--cluster', self.short_id])
         if remote: cmd.extend(['--remote'])
-        
-        print(cmd)
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
 
