@@ -23,6 +23,7 @@ class Instance:
         self.short_id = None
         self.port_ids = {}
         self.ids_running = {}
+        self.short_ids = {}
 
         self.verbose = verbose
         self.process_line = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])') # remove color codes
@@ -95,7 +96,7 @@ class Instance:
         cmd = ['helix', 'deploy']
         if self.config_path: cmd.extend(['--path', self.config_path])
         if self.port: cmd.extend(['--port', self.port])
-        if redeploy: cmd.extend(['--cluster', self.short_id])
+        if redeploy and self.short_id: cmd.extend(['--cluster', self.short_id])
         if remote: cmd.extend(['--remote'])
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
