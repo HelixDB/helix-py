@@ -188,7 +188,7 @@ class Instance:
 
         del self.port_ids[self.port]
         del self.ids_running[self.instance_id]
-        del self.short_ids[self.port]
+        self.short_ids.pop(self.port, None)
         self.instance_id = None
         self.short_id = None
 
