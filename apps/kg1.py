@@ -8,7 +8,7 @@ import pymupdf4llm
 import argparse
 from tqdm import tqdm
 
-llm_client = OpenAIClient(model="gpt-4o")
+#llm_client = OpenAIClient(model="gpt-4o")
 db_client = helix.Client(local=True, verbose=False)
 
 def insert_e_r(nodes: List[Hnode], edges: List[Hedge]):

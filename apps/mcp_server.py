@@ -1,26 +1,3 @@
-# $ uv init project
-# $ cp mcp_server.py project
-# $ cd project
-# $ uv venv && source .venv/bin/activate
-# $ uv add helix-py "mcp[cli]"
-# then for claude-desktop add this to ~/Library/Application Support/Claude/claude_desktop_config.json
-#   adjusting paths of course
-"""
-{
-  "mcpServers": {
-    "helix-mcp": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/Users/ln/dev/helix-py/examples/sample_mcp_server",
-        "run",
-        "mcp_server.py"
-      ]
-    }
-  }
-}
-"""
-
 from mcp.server.fastmcp import FastMCP
 import helix
 from typing import Optional, Tuple, List

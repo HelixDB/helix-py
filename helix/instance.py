@@ -62,7 +62,7 @@ class Instance:
             if self.verbose: print(f"{GHELIX} Found existing instance IDs: {self.ids_running}", file=sys.stderr)
             if self.verbose: print(f"{GHELIX} Found existing short IDs: {self.short_ids}", file=sys.stderr)
 
-        if self.port in self.port_ids: 
+        if self.port in self.port_ids:
             self.instance_id = self.port_ids.get(self.port, None)
             self.short_id = self.short_ids.get(self.port, None)
 
@@ -128,10 +128,10 @@ class Instance:
 
         atexit.register(self.stop)
 
-        if self.verbose: 
-            if redeploy: 
+        if self.verbose:
+            if redeploy:
                 print(f"{GHELIX} Redeployed Helix instance: {self.instance_id}", file=sys.stderr)
-            else: 
+            else:
                 print(f"{GHELIX} Deployed Helix instance: {self.instance_id}", file=sys.stderr)
 
         return '\n'.join(output)
