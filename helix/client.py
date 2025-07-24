@@ -112,6 +112,17 @@ class next(Query):
     def response(self, response):
         return response
 
+class collect(Query):
+    def __init__(self, conn_id: str):
+        super().__init__(endpoint="mcp/" + self.__class__.__name__)
+        self.connection_id = conn_id
+
+    def query(self) -> List[Payload]:
+        return [{ "connection_id": self.connection_id }]
+
+    def response(self, response):
+        return response
+
 class schema_resource(Query):
     def __init__(self, conn_id: str):
         super().__init__(endpoint="mcp/" + self.__class__.__name__)

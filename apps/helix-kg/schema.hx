@@ -1,17 +1,23 @@
 V::Embedding {
-    vector_name: String,
-    vec: [F64]
+    vec: [F64],
 }
 
 N::Entity {
-    INDEX entity_name: String
+    INDEX entity_name: String,
+}
+
+E::Chunk {
+    From: Entity,
+    To: Embedding,
+    Properties: {
+    }
 }
 
 E::Relationship {
     From: Entity,
     To: Entity,
     Properties: {
-        edge_name: String
+        edge_name: String,
     }
 }
 

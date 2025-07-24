@@ -8,14 +8,19 @@ packages = ["helix/"]
 [tool.uv.sources]
 helix-py = { workspace = true }
 
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
 [project]
 name = "helix-py"
-version = "0.2.23"
+version = "0.2.24"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }]
 description = "helix-db python lib + workflows"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 liscense = { file = "LICENSE" }
 keywords = [
     "artificial-intelligence",
@@ -24,6 +29,7 @@ keywords = [
     "rag",
 ]
 dependencies = [
+    "fastmcp>=2.10.6",
     "numpy >= 2.0.2",
     "pip>=25.1.1",
     "pyarrow >= 19.0.1",
