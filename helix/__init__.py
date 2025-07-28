@@ -6,7 +6,6 @@ from helix.types import Payload, EdgeType, Hnode, Hedge, Hvector, json_to_helix
 from helix.loader import Loader
 from helix.instance import Instance
 from helix.providers import OllamaClient, OpenAIClient
-from helix.schema import Schema
 
 __version__ = "0.2.16"
 
