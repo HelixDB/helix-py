@@ -59,12 +59,18 @@ To setup a simple `Client` to interface with a running helix instance:
 import helix
 from helix.client import hnswinsert, hnswsearch
 
-db = helix.Client(local=True)
+db = helix.Client(local=True, verbose=True)
 data = helix.Loader("path/to/data", cols=["vecs"])
 [db.query(hnswinsert(d)) for d in data] # build hnsw index
 
 my_query = [0.32, ..., -1.321]
 nearest = db.query(hnswsearch(my_query)) # query hnsw index
+```
+
+If you don't want to define a class/methods for every query you have, you can also simply
+use
+```python
+db.query("add_user", { "name", "John", "age": 34 })
 ```
 
 ### Instance
@@ -79,8 +85,10 @@ and from there you can interact with it like you would with the `Client`
 ### Providers
 We also provide an ollama interface. This will be expanded to include many other providers in the future.
 ```python
-from helix.providers import OllamaClient
+from helix.providers import OllamaClient, OpenAIClient
 ollama_client = OllamaClient(use_history=True, model="mistral:latest")
+# or
+openai_client = OpenAIClient(use_history=False, model="gpt-4o")
 
 while True:
     prompt = input(">>> ")
