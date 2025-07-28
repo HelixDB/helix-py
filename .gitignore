@@ -9,8 +9,12 @@ dist/
 .venv/
 uv.lock
 testing.py
+<<<<<<< HEAD
+.DS_Store
+=======
 test.py
 .DS_Store
 graph.html
 lib/
 
+>>>>>>> f68c6769190c44d58de895f5d0b857808cf6696e
