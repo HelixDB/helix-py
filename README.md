@@ -124,7 +124,7 @@ then for claude-desktop, for example, add this to
 }
 ```
 
-### Loader
+### Schema
 To dynamically create, load, and edit your Helixdb schema, you can use the `Schema` class.
 To get started, you can create a `schema` instance and optionally pass in the path to your configs file.
 ```python
