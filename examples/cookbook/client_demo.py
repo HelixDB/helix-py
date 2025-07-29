@@ -11,8 +11,8 @@ users = client.query("create_user", [
     {"name": "Jane", "age": 25, "email": "jane@example.com", "now": 1722222222}
 ])
 print(users)
-user1 = users[0]['user'][0]
-user2 = users[1]['user'][0]
+user1 = users[0]['user']
+user2 = users[1]['user']
 print("\n")
 
 user1_id = user1['id']

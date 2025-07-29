@@ -107,8 +107,8 @@ user2 = db.query(create_user("Jane", 25, "jane@example.com", 1722222222))
 print(user1, "\n", user2)
 print("\n")
 
-user1_id = user1[0]['user'][0]['id']
-user2_id = user2[0]['user'][0]['id']
+user1_id = user1[0]['user']['id']
+user2_id = user2[0]['user']['id']
 
 print("-"*20 + "GET USERS" + "-"*20)
 for user in db.query(get_users())[0]['users']:
@@ -123,8 +123,8 @@ print("\n")
 print("-"*20 + "CREATE POST" + "-"*20)
 content1 = "Sample Post Content Hello World 1"
 content2 = "Sample Post Content Hello World 2"
-print(db.query(create_post(user1_id, content1, 1983333333))[0]['post'][0])
-print(db.query(create_post(user2_id, content2, 1983333333))[0]['post'][0])
+print(db.query(create_post(user1_id, content1, 1983333333))[0]['post'])
+print(db.query(create_post(user2_id, content2, 1983333333))[0]['post'])
 print("\n")
 
 print("-"*20 + "GET POSTS" + "-"*20)
