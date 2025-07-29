@@ -147,7 +147,7 @@ class Client:
     def __init__(self, local: bool, port: int=6969, api_endpoint: str="", verbose: bool=True):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
-        self.h_server_url = "http://0.0.0.0" if local else self.h_server_api_endpoint
+        self.h_server_url = "http://127.0.0.1" if local else self.h_server_api_endpoint
         self.verbose = verbose
         self.local = local
 
