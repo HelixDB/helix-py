@@ -8,5 +8,5 @@ from helix.instance import Instance
 from helix.providers import OllamaClient, OpenAIClient
 from helix.schema import Schema
 
-__version__ = "0.2.24"
+__version__ = "0.2.25"
 
