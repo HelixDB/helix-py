@@ -15,7 +15,7 @@ members = [
 
 [project]
 name = "helix-py"
-version = "0.2.24"
+version = "0.2.25"
 authors = [{ name = "HelixDB Team", email = "lukasnitzsche@yahoo.com"}]
 maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }]
 description = "helix-db python lib + workflows"
