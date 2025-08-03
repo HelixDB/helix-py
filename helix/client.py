@@ -144,12 +144,13 @@ class Client:
         api_endpoint (str, optional): The API endpoint to use for the Helix server.
         verbose (bool, optional): Whether to print verbose output or not. Defaults to True.
     """
-    def __init__(self, local: bool, port: int=6969, api_endpoint: str="", verbose: bool=True):
+    def __init__(self, local: bool, port: int=6969, api_endpoint: str="", api_key: str="", verbose: bool=True):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://127.0.0.1" if local else self.h_server_api_endpoint
         self.verbose = verbose
         self.local = local
+        self.api_key = api_key
 
         if local:
             try:
@@ -234,6 +235,9 @@ class Client:
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
+
+                if not self.local and self.api_key:
+                    req.add_header("x-api-key", self.api_key)
 
                 with urllib.request.urlopen(req) as response:
                     if response.getcode() == 200:
