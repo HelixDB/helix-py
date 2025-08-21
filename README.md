@@ -7,8 +7,6 @@ operations and custom queries, ideal for tasks like similarity search and knowle
 construction. This library is meant to extend helix-db to be more easily used in machine learning
 applications.
 
-helix-py will soon be built to become a full knowledge graph framework. (this will be v0.3.0)
-
 ## Installation
 
 ### Install helix-py
