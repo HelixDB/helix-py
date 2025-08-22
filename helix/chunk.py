@@ -1,23 +1,40 @@
-from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules
+from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker
 from typing import List, Optional, Union, Any
 from tokenizers import Tokenizer
 
 class Chunk:
-    def __init__(self, text: str, start_index: int = 0, end_index: int = 0, token_count: int = 0):
+    def __init__(self, text: str, start_index: int = 0, end_index: int = 0, token_count: int = 0, 
+                lang: Optional[str] = None, nodes: Optional[List[Any]] = None):
         self.text = text
         self.start_index = start_index
         self.end_index = end_index
         self.token_count = token_count
+        self.lang = lang
+        self.nodes = nodes
 
     # this method helps handle the common chunking logic e.g single text or batch text
     @staticmethod
     def _process_chunks(chunker, text: Union[str, List[str]]) -> Union[List['Chunk'], List[List['Chunk']]]:
         if isinstance(text, str):
             chonkie_chunks = chunker.chunk(text)
-            return [Chunk(chunk.text, chunk.start_index, chunk.end_index, chunk.token_count) for chunk in chonkie_chunks]
+            return [Chunk(
+                chunk.text, 
+                chunk.start_index, 
+                chunk.end_index, 
+                chunk.token_count,
+                getattr(chunk, 'lang', None),
+                getattr(chunk, 'nodes', None)
+            ) for chunk in chonkie_chunks]
         else:
             batch_chunks = chunker.chunk_batch(text)
-            return [[Chunk(chunk.text, chunk.start_index, chunk.end_index, chunk.token_count) for chunk in doc_chunks] 
+            return [[Chunk(
+                chunk.text, 
+                chunk.start_index, 
+                chunk.end_index, 
+                chunk.token_count,
+                getattr(chunk, 'lang', None),
+                getattr(chunk, 'nodes', None)
+            ) for chunk in doc_chunks] 
                     for doc_chunks in batch_chunks]
     
     # this is for chonkie token chunker
@@ -62,3 +79,42 @@ class Chunk:
             )
         
         return Chunk._process_chunks(chunker, text)
+    
+    #this is for chonkie code chunker
+    @staticmethod
+    def code_chunk(text: Union[str, List[str]], language: str, tokenizer: str = "character", 
+                  chunk_size: int = 2048, include_nodes: bool = False) -> Union[List['Chunk'], List[List['Chunk']]]:
+        chunker = CodeChunker(
+            language=language,
+            tokenizer_or_token_counter=tokenizer,
+            chunk_size=chunk_size,
+            include_nodes=include_nodes
+        )
+        
+        return Chunk._process_chunks(chunker, text)
+
+    # this is for chonkie semantic chunker
+    @staticmethod
+    def semantic_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
+        ...
+
+    # this is for chonkie SDPM chunker
+    @staticmethod
+    def sdp_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
+        ...
+
+    # this is for chonkie late chunker
+    @staticmethod
+    def late_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
+        ...
+    
+    # this is for chonkie neural chunker
+    @staticmethod
+    def neural_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
+        ...
+    
+    # this is for chonkie slumber chunker
+    @staticmethod
+    def slumber_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
+        ...
+    
