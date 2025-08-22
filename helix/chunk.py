@@ -1,4 +1,4 @@
-from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker
+from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker, NeuralChunker
 from typing import List, Optional, Union, Any
 from tokenizers import Tokenizer
 
@@ -168,8 +168,15 @@ class Chunk:
     
     # this is for chonkie neural chunker
     @staticmethod
-    def neural_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
-        ...
+    def neural_chunk(text: Union[str, List[str]], model: str = "mirth/chonky_modernbert_base_1", 
+                    device_map: str = "cpu", min_characters_per_chunk: int = 10) -> Union[List['Chunk'], List[List['Chunk']]]:
+        chunker = NeuralChunker(
+            model=model,
+            device_map=device_map,
+            min_characters_per_chunk=min_characters_per_chunk
+        )
+        
+        return Chunk._process_chunks(chunker, text)
     
     # this is for chonkie slumber chunker
     @staticmethod
