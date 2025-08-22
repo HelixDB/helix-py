@@ -99,10 +99,11 @@ class Chunk:
     def semantic_chunk(text: Union[str, List[str]], embedding_model: str = "minishlab/potion-base-8M", 
                       threshold: Union[float, int, str] = "auto", chunk_size: int = 2048, 
                       mode: str = "window", min_sentences: int = 1, similarity_window: int = 1,
-                      min_chunk_size: Optional[int] = None, min_characters_per_sentence: int = 12,
+                      min_chunk_size: int = 2, min_characters_per_sentence: int = 12,
                       threshold_step: float = 0.01, 
                       delim: Union[str, List[str]] = ['.', '!', '?', '\n'],
                       include_delim: Optional[str] = "prev") -> Union[List['Chunk'], List[List['Chunk']]]:
+
         chunker = SemanticChunker(
             embedding_model=embedding_model,
             threshold=threshold,
