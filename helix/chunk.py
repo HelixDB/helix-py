@@ -1,4 +1,4 @@
-from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker
+from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker
 from typing import List, Optional, Union, Any
 from tokenizers import Tokenizer
 
@@ -147,8 +147,24 @@ class Chunk:
 
     # this is for chonkie late chunker
     @staticmethod
-    def late_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
-        ...
+    def late_chunk(text: Union[str, List[str]], embedding_model: str = "all-MiniLM-L6-v2", 
+                  chunk_size: int = 2048, rules: Optional[Any] = None, 
+                  min_characters_per_chunk: int = 24,
+                  recipe: Optional[str] = None, lang: str = "en") -> Union[List['Chunk'], List[List['Chunk']]]:
+        if recipe:
+            if lang != "en":
+                chunker = LateChunker.from_recipe(lang=lang)
+            else:
+                chunker = LateChunker.from_recipe(recipe, lang=lang)
+        else:
+            chunker = LateChunker(
+                embedding_model=embedding_model,
+                chunk_size=chunk_size,
+                rules=rules or RecursiveRules(),
+                min_characters_per_chunk=min_characters_per_chunk
+            )
+        
+        return Chunk._process_chunks(chunker, text)
     
     # this is for chonkie neural chunker
     @staticmethod
