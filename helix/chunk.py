@@ -188,7 +188,7 @@ class Chunk:
                      min_characters_per_chunk: int = 24, 
                      verbose: bool = True) -> Union[List['Chunk'], List[List['Chunk']]]:
         if genie is None:
-            genie = GeminiGenie("gemini-2.5-flash-preview-04-17")
+            genie = GeminiGenie("gemini-2.5-pro-preview-03-25")
             
         chunker = SlumberChunker(
             genie=genie,
