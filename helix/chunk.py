@@ -1,4 +1,5 @@
-from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker, NeuralChunker
+from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker, NeuralChunker, SlumberChunker
+from chonkie.genie import GeminiGenie
 from typing import List, Optional, Union, Any
 from tokenizers import Tokenizer
 
@@ -180,6 +181,23 @@ class Chunk:
     
     # this is for chonkie slumber chunker
     @staticmethod
-    def slumber_chunk() -> Union[List['Chunk'], List[List['Chunk']]]:
-        ...
+    def slumber_chunk(text: Union[str, List[str]], genie: Optional[Any] = None, 
+                     tokenizer: str = "character", chunk_size: int = 1024,
+                     rules: Optional[Any] = None, candidate_size: int = 128,
+                     min_characters_per_chunk: int = 24, 
+                     verbose: bool = True) -> Union[List['Chunk'], List[List['Chunk']]]:
+        if genie is None:
+            genie = GeminiGenie("gemini-2.5-flash-preview-04-17")
+            
+        chunker = SlumberChunker(
+            genie=genie,
+            tokenizer_or_token_counter=tokenizer,
+            chunk_size=chunk_size,
+            rules=rules or RecursiveRules(),
+            candidate_size=candidate_size,
+            min_characters_per_chunk=min_characters_per_chunk,
+            verbose=verbose
+        )
+        
+        return Chunk._process_chunks(chunker, text)
     
