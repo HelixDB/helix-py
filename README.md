@@ -163,7 +163,7 @@ texts = ["Document 1...", "Document 2...", "Document 3..."]
 batch_chunks = Chunk.sentence_chunk(texts)
 ```
 
-You can find all the different chunking examples inside of https://docs.helix-db.com/features/chunking/
+You can find all the different chunking examples inside of https://docs.helix-db.com/features/chunking/helix-chunking
 
 ## License
 helix-py is licensed under the The AGPL (Affero General Public License).
