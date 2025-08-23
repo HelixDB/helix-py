@@ -25,7 +25,8 @@ class OpenAIProvider(Provider):
         model: str=DEFAULT_MODEL,
         temperature: float | None = None,
         reasoning: Dict[str, Any] | None = None,
-        history: bool = False
+        history: bool = False,
+        base_url: str | None = None,
     ):
         if api_key is None:
             load_dotenv()
@@ -33,7 +34,7 @@ class OpenAIProvider(Provider):
             if api_key is None:
                 raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
 
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
         self.temperature = temperature
         self.reasoning = reasoning
