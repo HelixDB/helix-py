@@ -9,6 +9,14 @@ DEFAULT_MODEL = "text-embedding-3-small"
 DEFAULT_DIMENSIONS = 1536
 
 class OpenAIEmbedder(Embedder):
+    """
+    OpenAI Embedder
+
+    Args:
+        api_key (str): The API key for OpenAI. (Defaults to OPENAI_API_KEY environment variable)
+        model (str): The model to use.
+        dimensions (int): The dimensions of the embedding.
+    """
     def __init__(self, api_key: str=None, model: str=DEFAULT_MODEL, dimensions: int=DEFAULT_DIMENSIONS):
         if api_key is None:
             api_key = os.environ.get("OPENAI_API_KEY")
@@ -19,7 +27,25 @@ class OpenAIEmbedder(Embedder):
         self.dimensions = dimensions
 
     def embed(self, data: str) -> List[float]:
+        """
+        Embed a string using OpenAI.
+
+        Args:
+            data (str): The string to embed.
+
+        Returns:
+            List[float]: The embedding of the string.
+        """
         return self.client.embeddings.create(input=data, model=self.model, dimensions=self.dimensions).data[0].embedding
 
     def embed_batch(self, data_list: List[str]) -> List[List[float]]:
+        """
+        Embed a list of strings using OpenAI.
+
+        Args:
+            data_list (List[str]): The list of strings to embed.
+
+        Returns:
+            List[List[float]]: The list of embeddings.
+        """
         return [vector.embedding for vector in tqdm(self.client.embeddings.create(input=data_list, model=self.model, dimensions=self.dimensions).data, total=len(data_list), desc="Embedding", file=sys.stderr)]

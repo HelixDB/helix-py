@@ -2,29 +2,34 @@ from helix.llm_providers.provider import Provider
 from openai import OpenAI
 from pydantic import BaseModel
 from typing import List, Dict, Any
+from dotenv import load_dotenv
 import os
+
+DEFAULT_MODEL = "gpt-5-nano"
+DEFAULT_MCP_URL = "http://localhost:8000/mcp/"
 
 class OpenAIProvider(Provider):
     """
     OpenAI LLM Provider
 
     Args:
-        api_key (str): The API key for OpenAI.
+        api_key (str): The API key for OpenAI. (Defaults to OPENAI_API_KEY environment variable)
         model (str): The model to use.
-        temperature (float): The temperature to use. (Not supported for gpt-5 models)
-        reasoning (Dict[str, Any]): The reasoning to use. (Only supported for gpt-5 models)
+        temperature (float): The temperature setting to use. (Not supported for gpt-5 models)
+        reasoning (Dict[str, Any]): The reasoning setting to use. (Only supported for gpt-5 models)
     """
 
     def __init__(
         self,
         api_key: str=None,
-        model: str="gpt-5-nano",
+        model: str=DEFAULT_MODEL,
         temperature: float | None = None,
         reasoning: Dict[str, Any] | None = None,
         history: bool = False
     ):
         if api_key is None:
-            api_key = os.environ.get("OPENAI_API_KEY")
+            load_dotenv()
+            api_key = os.getenv("OPENAI_API_KEY")
             if api_key is None:
                 raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
 
@@ -39,8 +44,19 @@ class OpenAIProvider(Provider):
         self,
         name: str,
         description: str,
-        url: str = "http://localhost:8000/mcp/",
+        url: str = DEFAULT_MCP_URL,
     ) -> bool:
+        """
+        Enable MCPs for the OpenAI provider.
+
+        Args:
+            name (str): The name of the server.
+            description (str): The description of the server.
+            url (str, optional): The URL of the server. (Defaults to "http://localhost:8000/mcp/")
+
+        Returns:
+            bool: True if MCPs are enabled, False otherwise.
+        """
         self.mcp_configs = {
             "type": "mcp",
             "server_label": name,
@@ -53,8 +69,18 @@ class OpenAIProvider(Provider):
     def generate(
         self, 
         messages: str | List[Dict[str, Any]], 
-        response_model: type[BaseModel] | None = None
-    ) -> str | Dict[str, Any]:
+        response_model: BaseModel | None = None
+    ) -> str | BaseModel:
+        """
+        Generate a response from the OpenAI provider.
+
+        Args:
+            messages (str | List[Dict[str, Any]]): The messages to send to the provider.
+            response_model (BaseModel | None, optional): The response model to use. (Defaults to None)
+
+        Returns:
+            str | BaseModel: The response from the provider.
+        """
         if isinstance(self.history, list):
             if isinstance(messages, list):
                 messages = self.history + messages
