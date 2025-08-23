@@ -4,7 +4,7 @@ from fastmcp import FastMCP
 from fastmcp.tools.tool import Tool
 from helix.client import Client
 from helix.types import GHELIX, RHELIX
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Any
 from enum import Enum
 
