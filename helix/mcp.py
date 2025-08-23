@@ -133,6 +133,26 @@ class SearchKeywordArgs(BaseModel):
     label: str = Field(..., description="The label/name of the node to search")
     limit: int = Field(10, description="The limit of results to return")
 
+# ======================
+# Tool Configs
+# ======================
+
+class ToolConfig(BaseModel):
+    """
+    Enable/disable MCP tools. Defaults to enabled.
+    """
+    n_from_type: bool = Field(True, description="Enable n_from_type tool")
+    e_from_type: bool = Field(True, description="Enable e_from_type tool")
+    out_step: bool = Field(True, description="Enable out_step tool")
+    out_e_step: bool = Field(True, description="Enable out_e_step tool")
+    in_step: bool = Field(True, description="Enable in_step tool")
+    in_e_step: bool = Field(True, description="Enable in_e_step tool")
+    filter_items: bool = Field(True, description="Enable filter tool")
+    search_vector: bool = Field(True, description="Enable search_v tool")
+    search_vector_text: bool = Field(True, description="Enable search_v_text tool")
+    search_keyword: bool = Field(True, description="Enable search_keyword tool")
+    
+
 class MCPServer:
     def __init__(
         self,
@@ -140,10 +160,12 @@ class MCPServer:
         client: Client,
         mcp_args: Optional[Dict[str, Any]] = {},
         verbose: bool=True,
+        tool_config: ToolConfig = ToolConfig(),
     ):
         self.mcp = FastMCP(name, **mcp_args)
         self.client = client
         self.verbose = verbose
+        self.tool_config = tool_config
         self._register_tools()
 
     def add_tool(self, tool: Tool):
@@ -235,7 +257,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP schema_resource failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.n_from_type)
         def n_from_type(args: NFromTypeArgs) -> Dict[str, Any]:
             """
             Retrieves all nodes of a given type
@@ -245,12 +267,13 @@ class MCPServer:
             """
             try:
                 if self.verbose: print(f"{GHELIX} MCP n_from_type", file=sys.stderr)
+                print({'connection_id': args.connection_id, 'data': {'node_type': args.node_type}})
                 result = self.client.query('mcp/n_from_type', {'connection_id': args.connection_id, 'data': {'node_type': args.node_type}})[0]
                 return {} if result is None else result
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP n_from_type failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.e_from_type)
         def e_from_type(args: EFromTypeArgs) -> Dict[str, Any]:
             """
             Retrieves all edges of a given type
@@ -265,7 +288,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP e_from_type failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.out_step)
         def out_step(args: OutStepArgs) -> Dict[str, Any]:
             """
             Traverses out from current nodes or vectors in the traversal with the given edge label to nodes or vectors. 
@@ -281,7 +304,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP out_step failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.out_e_step)
         def out_e_step(args: OutEStepArgs) -> Dict[str, Any]:
             """
             Traverses out from current nodes or vectors in the traversal to their edges with the given edge label. 
@@ -297,7 +320,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP out_e_step failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.in_step)
         def in_step(args: InStepArgs) -> Dict[str, Any]:
             """
             Traverses in from current nodes or vectors in the traversal with the given edge label to nodes or vectors. 
@@ -313,7 +336,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP in_step failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.in_e_step)
         def in_e_step(args: InEStepArgs) -> Dict[str, Any]:
             """
             Traverses in from current nodes or vectors in the traversal to their edges with the given edge label. 
@@ -329,7 +352,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP in_e_step failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.filter_items)
         def filter_items(args: FilterArgs) -> Dict[str, Any]:
             """
             Filters the current state of the traversal based on the given filter.
@@ -374,7 +397,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP filter failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.search_vector)
         def search_vector(args: SearchVArgs) -> List[Dict[str, Any]]:
             """
             Similairity searches the vectors in the traversal based on the given vector.
@@ -389,7 +412,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP search_vector failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.search_vector_text)
         def search_vector_text(args: SearchVTextArgs) -> List[Dict[str, Any]]:
             """
             Similairity searches the vectors in the traversal based on the given text query.
@@ -404,7 +427,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP search_vector_text failed: {e}")
 
-        @self.mcp.tool()
+        @self.mcp.tool(enabled=self.tool_config.search_keyword)
         def search_keyword(args: SearchKeywordArgs) -> List[Dict[str, Any]]:
             """
             BM25 searches the nodes in the traversal based on the given keyword query and the node label.
