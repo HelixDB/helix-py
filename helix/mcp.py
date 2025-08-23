@@ -237,6 +237,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def n_from_type(args: NFromTypeArgs) -> Dict[str, Any]:
+            """
+            Retrieves all nodes of a given type
+
+            Returns:
+                Dict[str, Any] (The first node of the given type)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP n_from_type", file=sys.stderr)
                 result = self.client.query('mcp/n_from_type', {'connection_id': args.connection_id, 'data': {'node_type': args.node_type}})[0]
@@ -246,6 +252,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def e_from_type(args: EFromTypeArgs) -> Dict[str, Any]:
+            """
+            Retrieves all edges of a given type
+
+            Returns:
+                Dict[str, Any] (The first edge of the given type)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP e_from_type", file=sys.stderr)
                 result =  self.client.query('mcp/e_from_type', {'connection_id': args.connection_id, 'data': {'edge_type': args.edge_type}})[0]
@@ -255,6 +267,13 @@ class MCPServer:
 
         @self.mcp.tool()
         def out_step(args: OutStepArgs) -> Dict[str, Any]:
+            """
+            Traverses out from current nodes or vectors in the traversal with the given edge label to nodes or vectors. 
+            Assumes that the current state of the traversal is a collection of nodes or vectors that is the source of the given edge label.
+
+            Returns:
+                Dict[str, Any] (The first node of the traversal result)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP out_step", file=sys.stderr)
                 result = self.client.query('mcp/out_step', {'connection_id': args.connection_id, 'data': {'edge_label': args.edge_label, 'edge_type': args.edge_type.value}})[0]
@@ -264,6 +283,13 @@ class MCPServer:
 
         @self.mcp.tool()
         def out_e_step(args: OutEStepArgs) -> Dict[str, Any]:
+            """
+            Traverses out from current nodes or vectors in the traversal to their edges with the given edge label. 
+            Assumes that the current state of the traversal is a collection of nodes or vectors that is the source of the given edge label.
+
+            Returns:
+                Dict[str, Any] (The first edge of the traversal result)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP out_e_step", file=sys.stderr)
                 result = self.client.query('mcp/out_e_step', {'connection_id': args.connection_id, 'data': {'edge_label': args.edge_label}})[0]
@@ -273,6 +299,13 @@ class MCPServer:
 
         @self.mcp.tool()
         def in_step(args: InStepArgs) -> Dict[str, Any]:
+            """
+            Traverses in from current nodes or vectors in the traversal with the given edge label to nodes or vectors. 
+            Assumes that the current state of the traversal is a collection of nodes or vectors that is the target of the given edge label.
+
+            Returns:
+                Dict[str, Any] (The first node of the traversal result)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP in_step", file=sys.stderr)
                 result = self.client.query('mcp/in_step', {'connection_id': args.connection_id, 'data': {'edge_label': args.edge_label, 'edge_type': args.edge_type.value}})[0]
@@ -282,6 +315,13 @@ class MCPServer:
 
         @self.mcp.tool()
         def in_e_step(args: InEStepArgs) -> Dict[str, Any]:
+            """
+            Traverses in from current nodes or vectors in the traversal to their edges with the given edge label. 
+            Assumes that the current state of the traversal is a collection of nodes or vectors that is the target of the given edge label.
+
+            Returns:
+                Dict[str, Any] (The first edge of the traversal result)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP in_e_step", file=sys.stderr)
                 result = self.client.query('mcp/in_e_step', {'connection_id': args.connection_id, 'data': {'edge_label': args.edge_label}})[0]
@@ -291,6 +331,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def filter_items(args: FilterArgs) -> Dict[str, Any]:
+            """
+            Filters the current state of the traversal based on the given filter.
+
+            Returns:
+                Dict[str, Any] (The first item of the traversal result)
+            """
             def _unwrap_filters(filters: Filter) -> Dict[str, Any]:
                 properties = []
                 for and_group in filters.properties:
@@ -330,6 +376,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def search_vector(args: SearchVArgs) -> List[Dict[str, Any]]:
+            """
+            Similairity searches the vectors in the traversal based on the given vector.
+
+            Returns:
+                List[Dict[str, Any]] (The first k vectors of the traversal result ordered by descending similarity)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP search_vector", file=sys.stderr)
                 result = self.client.query('mcp/search_vector', {'connection_id': args.connection_id, 'data': {'vector': args.vector, 'k': args.k, 'min_score': args.min_score}})[0]
@@ -339,6 +391,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def search_vector_text(args: SearchVTextArgs) -> List[Dict[str, Any]]:
+            """
+            Similairity searches the vectors in the traversal based on the given text query.
+
+            Returns:
+                List[Dict[str, Any]] (The first 5 vectors of the traversal result ordered by descending similarity)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP search_vector_text", file=sys.stderr)
                 result = self.client.query('mcp/search_vector_text', {'connection_id': args.connection_id, 'data': {'query': args.query, 'label': args.label}})[0]
@@ -348,6 +406,12 @@ class MCPServer:
 
         @self.mcp.tool()
         def search_keyword(args: SearchKeywordArgs) -> List[Dict[str, Any]]:
+            """
+            BM25 searches the nodes in the traversal based on the given keyword query and the node label.
+
+            Returns:
+                List[Dict[str, Any]] (The first k nodes of the traversal result ordered by descending similarity where k is the limit)
+            """
             try:
                 if self.verbose: print(f"{GHELIX} MCP search_keyword", file=sys.stderr)
                 result = self.client.query('mcp/search_keyword', {'connection_id': args.connection_id, 'data': {'query': args.query, 'label': args.label, 'limit': args.limit}})[0]
