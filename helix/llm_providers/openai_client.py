@@ -33,17 +33,14 @@ class OpenAIProvider(Provider):
         self.temperature = temperature
         self.reasoning = reasoning
         self.history = [] if history else None
-
-        self.mcp_enabled = False
-        self.mcp_configs = {}
+        self.mcp_configs = None
 
     def enable_mcps(
         self,
         name: str,
         description: str,
-        url: str,
+        url: str = "http://localhost:8000/mcp/",
     ) -> bool:
-        self.mcp_enabled = True
         self.mcp_configs = {
             "type": "mcp",
             "server_label": name,
@@ -73,7 +70,7 @@ class OpenAIProvider(Provider):
             args["temperature"] = self.temperature
         if self.reasoning is not None:
             args["reasoning"] = self.reasoning
-        if self.mcp_enabled:
+        if self.mcp_configs is not None:
             args["tools"] = [self.mcp_configs]
         if response_model is not None:
             args["text_format"] = response_model
