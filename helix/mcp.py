@@ -1,5 +1,7 @@
 from __future__ import annotations
 import sys
+import asyncio
+import threading
 from fastmcp import FastMCP
 from fastmcp.tools.tool import Tool
 from helix.client import Client
@@ -462,7 +464,7 @@ class MCPServer:
         """
         self.mcp.run(transport=transport, host=host, port=port, **run_args)
 
-    def run_async(
+    async def run_async(
         self,
         transport: str="streamable-http",
         host: str="127.0.0.1",
@@ -478,4 +480,24 @@ class MCPServer:
             port (int, optional): The port to use. Defaults to 8000.
             **run_args: Additional arguments to pass to the run method.
         """
-        self.mcp.run_async(transport=transport, host=host, port=port, **run_args)
+        await self.mcp.run_async(transport=transport, host=host, port=port, **run_args)
+
+    def run_bg(
+        self,
+        transport: str="streamable-http",
+        host: str="127.0.0.1",
+        port: int=8000,
+        **run_args,
+    ) -> threading.Thread:
+        """
+        Start the MCP server in a background thread. Non-blocking.
+
+        Returns:
+            threading.Thread: The daemon thread running the server.
+        """
+        def _runner():
+            asyncio.run(self.mcp.run_async(transport=transport, host=host, port=port, **run_args))
+
+        t = threading.Thread(target=_runner, daemon=True)
+        t.start()
+        return t
