@@ -7,6 +7,7 @@ from helix.loader import Loader
 from helix.instance import Instance
 from helix.providers import OllamaClient, OpenAIClient
 from helix.schema import Schema
+from helix.chunk import Chunk
 from helix.mcp import MCPServer, ToolConfig
 
 __version__ = "0.2.25"
