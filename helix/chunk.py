@@ -102,7 +102,7 @@ class Chunk:
             if lang != "en":
                 chunker = RecursiveChunker.from_recipe(lang=lang)
             else:
-                chunker = RecursiveChunker.from_recipe(recipe, lang=lang)
+            chunker = RecursiveChunker.from_recipe(recipe, lang=lang)
         else:
             chunker = RecursiveChunker(
                 tokenizer_or_token_counter=tokenizer,
