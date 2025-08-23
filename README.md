@@ -144,6 +144,27 @@ To save the schema to your configs folder, you can use the `save` method.
 schema.save()
 ```
 
+### Chunking
+
+Helix uses Chonkie (https://chonkie.ai/) chunking methods to split text into manageable pieces for processing and embedding:
+
+```python
+from helix import Chunk
+
+text = "Your long document text here..."
+chunks = Chunk.token_chunk(text)
+
+semantic_chunks = Chunk.semantic_chunk(text)
+
+code_text = "def hello(): print('world')"
+code_chunks = Chunk.code_chunk(code_text, language="python")
+
+texts = ["Document 1...", "Document 2...", "Document 3..."]
+batch_chunks = Chunk.sentence_chunk(texts)
+```
+
+You can find all the different chunking examples inside of https://docs.helix-db.com/features/chunking/
+
 ## License
 helix-py is licensed under the The AGPL (Affero General Public License).
 
