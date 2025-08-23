@@ -258,7 +258,7 @@ class Chunk:
             if lang != "en":
                 chunker = LateChunker.from_recipe(lang=lang)
             else:
-                chunker = LateChunker.from_recipe(recipe, lang=lang)
+            chunker = LateChunker.from_recipe(recipe, lang=lang)
         else:
             chunker = LateChunker(
                 embedding_model=embedding_model,
