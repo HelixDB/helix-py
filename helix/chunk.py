@@ -100,9 +100,9 @@ class Chunk:
         """
         if recipe:
             if lang != "en":
-                chunker = RecursiveChunker.from_recipe(lang=lang)
+                chunker = RecursiveChunker.from_recipe(recipe, lang=lang)
             else:
-            chunker = RecursiveChunker.from_recipe(recipe, lang=lang)
+                chunker = RecursiveChunker.from_recipe(recipe)
         else:
             chunker = RecursiveChunker(
                 tokenizer_or_token_counter=tokenizer,
@@ -256,9 +256,9 @@ class Chunk:
 
         if recipe:
             if lang != "en":
-                chunker = LateChunker.from_recipe(lang=lang)
+                chunker = LateChunker.from_recipe(recipe, lang=lang)
             else:
-            chunker = LateChunker.from_recipe(recipe, lang=lang)
+                chunker = LateChunker.from_recipe(recipe)
         else:
             chunker = LateChunker(
                 embedding_model=embedding_model,
