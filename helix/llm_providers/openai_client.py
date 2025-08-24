@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from enum import Enum
 from typing import List, Any, Literal
 from dotenv import load_dotenv
+import json
 import os
 import asyncio
 
@@ -86,7 +87,7 @@ class OpenAIProvider(Provider):
     def generate(
         self, 
         messages: str | List[Message], 
-        response_model: BaseModel | None = None
+        response_model: BaseModel | None = None,
     ) -> str | BaseModel:
         """
         Generate a response from the OpenAI provider.
@@ -108,10 +109,14 @@ class OpenAIProvider(Provider):
             else:
                 raise ValueError("Invalid message type")
 
+        print(messages)
+
         if response_model is not None:
             self.agent_configs["output_type"] = AgentOutputSchema(
                 output_type=response_model,
             )
+        else:
+            self.agent_configs.pop("output_type", None)
         
         async def run():
             if self.mcp_server_config:
@@ -134,5 +139,6 @@ class OpenAIProvider(Provider):
         else:
             result = response.final_output
         if isinstance(self.history, list):
-            self.history.append(Message(role=Role.model, content=result).model_dump(mode="json"))
+            content = result if isinstance(result, str) else json.dumps(result.model_dump(mode="json"))
+            self.history.append(Message(role=Role.model, content=content).model_dump(mode="json"))
         return result

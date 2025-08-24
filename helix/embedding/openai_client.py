@@ -16,13 +16,14 @@ class OpenAIEmbedder(Embedder):
         api_key (str): The API key for OpenAI. (Defaults to OPENAI_API_KEY environment variable)
         model (str): The model to use.
         dimensions (int): The dimensions of the embedding.
+        base_url (str): The base URL for the OpenAI API. 
     """
-    def __init__(self, api_key: str=None, model: str=DEFAULT_MODEL, dimensions: int=DEFAULT_DIMENSIONS):
+    def __init__(self, api_key: str=None, model: str=DEFAULT_MODEL, dimensions: int=DEFAULT_DIMENSIONS, base_url: str=None):
         if api_key is None:
             api_key = os.environ.get("OPENAI_API_KEY")
             if api_key is None:
                 raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
         self.dimensions = dimensions
 
