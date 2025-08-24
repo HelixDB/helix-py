@@ -29,6 +29,8 @@ keywords = [
     "rag",
 ]
 dependencies = [
+    "anthropic>=0.64.0",
+    "chonkie>=1.1.1",
     "fastmcp>=2.10.6",
     "google-genai>=1.31.0",
     "numpy >= 2.0.2",
