@@ -19,6 +19,17 @@ class Message(BaseModel):
     content: Any
 
 class AnthropicProvider(Provider):
+    """
+    Anthropic LLM Provider
+
+    Args:
+        api_key (str, optional): The API key to use. (Defaults to None)
+        model (str, optional): The model to use. (Defaults to "claude-3-5-haiku-20241022")
+        temperature (float, optional): The temperature setting to use. (Defaults to None)
+        thinking (float, optional): The thinking budget to use. (Defaults to 0)
+        max_tokens (int, optional): The maximum number of tokens to use. (Defaults to 3200)
+        history (bool, optional): Whether to use history. (Defaults to False)
+    """
     def __init__(
         self,
         api_key: str=None,
@@ -49,6 +60,18 @@ class AnthropicProvider(Provider):
         name: str,
         url: str,
     ) -> bool:
+        """
+        Enable MCPs for the Anthropic provider.
+
+        Note: Local MCP servers are not supported by Anthropic.
+
+        Args:
+            name (str): The name of the server.
+            url (str, optional): The URL of the server. (Defaults to "http://localhost:8000/mcp/")
+
+        Returns:
+            bool: True if MCPs are enabled, False otherwise.
+        """
         self.mcp_config = {"type": "url", "url": url, "name": name}
         return True
 
@@ -57,6 +80,16 @@ class AnthropicProvider(Provider):
         messages: str | List[Message] | List[dict], 
         response_model: BaseModel | None = None,
     ) -> str | BaseModel:
+        """
+        Generate a response from the LLM.
+
+        Args:
+            messages (str | List[Message] | List[dict]): The messages to send to the LLM.
+            response_model (BaseModel | None, optional): The response model to use. (Defaults to None)
+
+        Returns:
+            str | BaseModel: The response from the LLM.
+        """
         if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
             if isinstance(self.history, list):
                 messages = self.history + [msg.model_dump(mode="json") for msg in messages]

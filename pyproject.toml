@@ -40,6 +40,7 @@ dependencies = [
     "pyarrow >= 19.0.1",
     "requests>=2.32.4",
     "tqdm >= 4.67.1",
+    "voyageai>=0.3.4",
 ]
 
 [project.urls]
