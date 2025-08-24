@@ -75,7 +75,7 @@ class Operator(Enum):
 class FilterValue(BaseModel):
     key: str = Field(..., description="The key of the property")
     operator: Operator = Field(..., description="The operator to use")
-    value: Any = Field(..., description=(
+    value: int | float | str | List[int | float | str] = Field(..., description=(
         "The value to filter. "
         "List to value and value to list comparisons will use the OR operator for each element in the list. "
         "List to list comparisons will also use the OR operator for each element in each list."
