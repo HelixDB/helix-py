@@ -15,7 +15,7 @@ class Role(Enum):
 
 class Message(BaseModel):
     role: Role
-    content: str
+    content: Any | None = None
 
 class OpenAIProvider(Provider):
     """
@@ -118,5 +118,5 @@ class OpenAIProvider(Provider):
             response = self.client.responses.create(**args)
             result = response.output_text
         if isinstance(self.history, list):
-            self.history.append({"role": Role.model.value, "content": result})
+            self.history.append(Message(role=Role.model, content=result).model_dump(mode="json"))
         return result
