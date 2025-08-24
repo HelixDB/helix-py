@@ -97,15 +97,20 @@ class OpenAIProvider(Provider):
         Returns:
             str | BaseModel: The response from the provider.
         """
-        if isinstance(self.history, list):
-            if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
+        if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
+            if isinstance(self.history, list):
                 messages = self.history + [msg.model_dump(mode="json") for msg in messages]
                 self.history = messages
-            elif isinstance(messages, str):
+            else:
+                messages = [msg.model_dump(mode="json") for msg in messages]
+        elif isinstance(messages, str):
+            if isinstance(self.history, list):
                 messages = self.history + [Message(role=Role.user, content=messages).model_dump(mode="json")]
                 self.history = messages
             else:
-                raise ValueError("Invalid message type")
+                messages = [Message(role=Role.user, content=messages).model_dump(mode="json")]
+        else:
+            raise ValueError("Invalid message type")
 
         if response_model is not None:
             self.agent_configs["output_type"] = AgentOutputSchema(
