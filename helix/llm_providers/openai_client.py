@@ -140,6 +140,6 @@ class OpenAIProvider(Provider):
         else:
             result = response.final_output
         if isinstance(self.history, list):
-            content = result if isinstance(result, str) else json.dumps(result.model_dump(mode="json"))
+            content = json.dumps(result.model_dump(mode="json")) if isinstance(result, BaseModel) else str(result)
             self.history.append(Message(role=Role.model, content=content).model_dump(mode="json"))
         return result

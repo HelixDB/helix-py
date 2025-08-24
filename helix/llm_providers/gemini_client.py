@@ -105,6 +105,6 @@ class GeminiProvider(Provider):
         else:
             result = response.text
         if isinstance(self.history, list):
-            text = result if isinstance(result, str) else json.dumps(result.model_dump(mode="json"))
+            text = json.dumps(result.model_dump(mode="json")) if isinstance(result, BaseModel) else str(result)
             self.history.append(Message(role=Role.model, parts=[Part(text=text)]).model_dump(mode="json"))
         return result
