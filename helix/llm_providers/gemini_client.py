@@ -48,7 +48,6 @@ class GeminiProvider(Provider):
     def enable_mcps(
         self,
         name: str,
-        description: str,
         url: str = DEFAULT_MCP_URL,
     ) -> bool:
         self.mcp_client = Client(url)

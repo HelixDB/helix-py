@@ -1,10 +1,13 @@
 from helix.llm_providers.provider import Provider
-from openai import OpenAI
+from agents import Agent, ModelSettings, Runner, AgentOutputSchema
+from openai.types.shared import Reasoning
+from agents.mcp import MCPServerStreamableHttp
 from pydantic import BaseModel
 from enum import Enum
-from typing import List, Dict, Any
+from typing import List, Any, Literal
 from dotenv import load_dotenv
 import os
+import asyncio
 
 DEFAULT_MODEL = "gpt-5-nano"
 DEFAULT_MCP_URL = "http://localhost:8000/mcp/"
@@ -22,33 +25,43 @@ class OpenAIProvider(Provider):
     OpenAI LLM Provider
 
     Args:
-        api_key (str): The API key for OpenAI. (Defaults to OPENAI_API_KEY environment variable)
+        name (str): The name of the agent.
+        instructions (str): The instructions for the agent.
         model (str): The model to use.
         temperature (float): The temperature setting to use. (Not supported for gpt-5 models)
-        reasoning (Dict[str, Any]): The reasoning setting to use. (Only supported for gpt-5 models)
+        reasoning (Reasoning | None): The reasoning setting to use. (Only supported for gpt-5 models)
+        verbosity (Literal["low", "medium", "high"] | None): The verbosity level to use.
+        history (bool): Whether to use history.
     """
 
     def __init__(
         self,
-        api_key: str = None,
+        name: str,
+        instructions: str,
         model: str = DEFAULT_MODEL,
         temperature: float | None = None,
-        reasoning: Dict[str, Any] | None = None,
+        reasoning: Reasoning | None = None,
+        verbosity: Literal["low", "medium", "high"] | None = None,
         history: bool = False,
-        base_url: str | None = None,
     ):
+        load_dotenv()
+        api_key = os.getenv("OPENAI_API_KEY")
         if api_key is None:
-            load_dotenv()
-            api_key = os.getenv("OPENAI_API_KEY")
-            if api_key is None:
-                raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
+            raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
 
-        self.client = OpenAI(api_key=api_key, base_url=base_url)
-        self.model = model
-        self.temperature = temperature
-        self.reasoning = reasoning
+        self.agent_configs = {
+            "name": name,
+            "instructions": instructions,
+            "model": model,
+            "model_settings": ModelSettings(
+                temperature=temperature,
+                reasoning=reasoning,
+                verbosity=verbosity
+            )
+        }
+
         self.history = [] if history else None
-        self.mcp_configs = None
+        self.mcp_server_config = None
 
     def enable_mcps(
         self,
@@ -67,13 +80,7 @@ class OpenAIProvider(Provider):
         Returns:
             bool: True if MCPs are enabled, False otherwise.
         """
-        self.mcp_configs = {
-            "type": "mcp",
-            "server_label": name,
-            "server_description": description,
-            "server_url": url,
-            "require_approval": "never",
-        }
+        self.mcp_server_config = {"url": url, "name": name}
         return True
 
     def generate(
@@ -100,23 +107,32 @@ class OpenAIProvider(Provider):
                 self.history = messages
             else:
                 raise ValueError("Invalid message type")
-        args = {
-            "model": self.model,
-            "input": messages
-        }
-        if self.temperature is not None:
-            args["temperature"] = self.temperature
-        if self.reasoning is not None:
-            args["reasoning"] = self.reasoning
-        if self.mcp_configs is not None:
-            args["tools"] = [self.mcp_configs]
+
         if response_model is not None:
-            args["text_format"] = response_model
-            response = self.client.responses.parse(**args)
-            result = response_model.model_validate(response.output_parsed)
+            self.agent_configs["output_type"] = AgentOutputSchema(
+                output_type=response_model,
+            )
+        
+        async def run():
+            if self.mcp_server_config:
+                async with MCPServerStreamableHttp(
+                    name=self.mcp_server_config["name"],
+                    params={"url": self.mcp_server_config["url"]}
+                ) as server:
+                    agent_configs = self.agent_configs.copy()
+                    agent_configs["mcp_servers"] = [server]
+                    agent_configs["mcp_config"] = {"convert_schemas_to_strict": True}
+                    agent = Agent(**agent_configs)
+                    return await Runner.run(starting_agent=agent, input=messages)
+            else:
+                agent = Agent(**self.agent_configs)
+                return await Runner.run(starting_agent=agent, input=messages)
+        
+        response = asyncio.run(run())
+        if response_model is not None:
+            result = response_model.model_validate(response.final_output)
         else:
-            response = self.client.responses.create(**args)
-            result = response.output_text
+            result = response.final_output
         if isinstance(self.history, list):
             self.history.append(Message(role=Role.model, content=result).model_dump(mode="json"))
         return result

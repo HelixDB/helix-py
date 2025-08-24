@@ -7,7 +7,6 @@ class Provider(ABC):
     def enable_mcps(
         self,
         name: str,
-        description: str,
         url: str,
     ) -> bool:
         ...
