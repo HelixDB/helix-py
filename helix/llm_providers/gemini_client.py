@@ -1,12 +1,16 @@
 from helix.llm_providers.provider import Provider
 from google import genai
 from google.genai import types
-from fastmcp import Client
+from fastmcp import FastMCP, Client
 from pydantic import BaseModel
 from enum import Enum
-from typing import List, Dict, Any
+from typing import List, Any
 from dotenv import load_dotenv
 import os
+import asyncio
+
+DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MCP_URL = "http://localhost:8000/mcp/"
 
 class Part(BaseModel):
     text: Any | None = None
@@ -23,7 +27,7 @@ class GeminiProvider(Provider):
     def __init__(
         self,
         api_key: str=None,
-        model: str = "gemini-2.0-flash",
+        model: str = DEFAULT_MODEL,
         temperature: float | None = None,
         thinking_budget: float = 0,
         history: bool = False,
@@ -39,10 +43,13 @@ class GeminiProvider(Provider):
         self.thinking_budget = thinking_budget
         self.history = [] if history else None
         self.mcp_client = None
+        self._loop = asyncio.new_event_loop()
 
     def enable_mcps(
         self,
-        url: str = "http://localhost:8000/mcp/"
+        name: str,
+        description: str,
+        url: str = DEFAULT_MCP_URL,
     ) -> bool:
         self.mcp_client = Client(url)
         return True
@@ -73,11 +80,14 @@ class GeminiProvider(Provider):
             config_args["response_mime_type"] = "application/json"
             config_args["response_schema"] = response_model
         if self.mcp_client is not None:
-            with self.mcp_client:
-                config_args["tools"] = [self.mcp_client.session]
-                config = types.GenerateContentConfig(**config_args)
-                args["config"] = config
-                response = self.client.models.generate_content(**args)
+            async def gen():
+                async with self.mcp_client:
+                    config_args["tools"] = [self.mcp_client.session]
+                    config = types.GenerateContentConfig(**config_args)
+                    args["config"] = config
+                    response = await self.client.aio.models.generate_content(**args)
+                return response
+            response = self._loop.run_until_complete(gen())
         else:
             config = types.GenerateContentConfig(**config_args)
             args["config"] = config
