@@ -1,7 +1,7 @@
 from helix.llm_providers.provider import Provider
 from google import genai
 from google.genai import types
-from fastmcp import FastMCP, Client
+from fastmcp import Client
 from pydantic import BaseModel
 from enum import Enum
 from typing import List, Any
