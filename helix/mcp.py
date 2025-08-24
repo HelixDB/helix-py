@@ -6,6 +6,7 @@ from fastmcp import FastMCP
 from fastmcp.tools.tool import Tool
 from helix.client import Client
 from helix.types import GHELIX, RHELIX
+from helix.embedding.embedder import Embedder
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Any
 from enum import Enum
@@ -120,7 +121,7 @@ class FilterArgs(BaseModel):
 
 class SearchVArgs(BaseModel):
     connection_id: str = Field(..., description="The connection id")
-    vector: List[float] = Field(..., description="The vector to search")
+    query: str = Field(..., description="The text query to search")
     k: int = Field(10, description="The number of results to return")
     min_score: Optional[float] = Field(None, description="The minimum score to filter by (0.0 to 1.0)")
 
@@ -156,6 +157,21 @@ class ToolConfig(BaseModel):
     
 
 class MCPServer:
+    """
+    MCP server for HelixDB MCP endpoints. Specialized for graph traversal and search.
+
+    Args:
+        name (str): The name of the MCP server.
+        client (Client): The Helix client.
+        mcp_args (Optional[Dict[str, Any]]): Extra arguments to pass to the MCP server.
+        verbose (bool): Whether to print verbose output.
+        tool_config (ToolConfig): Enable/disable MCP tools.
+        embedder (Optional[Embedder]): The embedder to use for vector search.
+
+    Note:
+        If embedder is not provided, search_vector tool will be disabled.
+        If embedder is provided, search_vector_text tool will be disabled.
+    """
     def __init__(
         self,
         name: str,
@@ -163,14 +179,28 @@ class MCPServer:
         mcp_args: Optional[Dict[str, Any]] = {},
         verbose: bool=True,
         tool_config: ToolConfig = ToolConfig(),
+        embedder: Optional[Embedder] = None,
     ):
         self.mcp = FastMCP(name, **mcp_args)
         self.client = client
         self.verbose = verbose
         self.tool_config = tool_config
+        self.embedder = embedder
+        if embedder is None:
+            self.tool_config.search_vector = False
+            self.tool_config.search_vector_text = True
+        else:
+            self.tool_config.search_vector = True
+            self.tool_config.search_vector_text = False
         self._register_tools()
 
     def add_tool(self, tool: Tool):
+        """
+        Add a tool to the MCP server.
+
+        Args:
+            tool (Tool): The MCP tool to add.
+        """
         self.mcp.add_tool(tool)
 
     def _register_tools(self) -> None:
@@ -218,6 +248,8 @@ class MCPServer:
                 if args.range is not None: payload['range'] = args.range.model_dump()
                 if not args.drop: payload['drop'] = args.drop
                 result = self.client.query('mcp/collect', payload)[0]
+                if isinstance(result, dict):
+                    result = [result]
                 return [] if result is None else result
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP collect failed: {e}")
@@ -393,7 +425,6 @@ class MCPServer:
                 if self.verbose: print(f"{GHELIX} MCP filter", file=sys.stderr)
                 filters = _unwrap_filters(args.filter)
                 payload = {'connection_id': args.connection_id, 'data': {'filter': filters}}
-                print(payload)
                 result = self.client.query('mcp/filter_items', payload)[0]
                 return {} if result is None else result
             except Exception as e:
@@ -409,7 +440,10 @@ class MCPServer:
             """
             try:
                 if self.verbose: print(f"{GHELIX} MCP search_vector", file=sys.stderr)
-                result = self.client.query('mcp/search_vector', {'connection_id': args.connection_id, 'data': {'vector': args.vector, 'k': args.k, 'min_score': args.min_score}})[0]
+                vector = self.embedder.embed(args.query)
+                result = self.client.query('mcp/search_vector', {'connection_id': args.connection_id, 'data': {'vector': vector, 'k': args.k, 'min_score': args.min_score}})[0]
+                if isinstance(result, dict):
+                    result = [result]
                 return [] if result is None else result
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP search_vector failed: {e}")
@@ -490,7 +524,7 @@ class MCPServer:
         **run_args,
     ) -> threading.Thread:
         """
-        Start the MCP server in a background thread. Non-blocking.
+        Start the MCP server in a non-blocking background thread.
 
         Returns:
             threading.Thread: The daemon thread running the server.
