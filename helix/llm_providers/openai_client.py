@@ -1,12 +1,21 @@
 from helix.llm_providers.provider import Provider
 from openai import OpenAI
 from pydantic import BaseModel
+from enum import Enum
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 import os
 
 DEFAULT_MODEL = "gpt-5-nano"
 DEFAULT_MCP_URL = "http://localhost:8000/mcp/"
+
+class Role(Enum):
+    user = "user"
+    model = "assistant"
+
+class Message(BaseModel):
+    role: Role
+    content: str
 
 class OpenAIProvider(Provider):
     """
@@ -21,8 +30,8 @@ class OpenAIProvider(Provider):
 
     def __init__(
         self,
-        api_key: str=None,
-        model: str=DEFAULT_MODEL,
+        api_key: str = None,
+        model: str = DEFAULT_MODEL,
         temperature: float | None = None,
         reasoning: Dict[str, Any] | None = None,
         history: bool = False,
@@ -69,26 +78,28 @@ class OpenAIProvider(Provider):
 
     def generate(
         self, 
-        messages: str | List[Dict[str, Any]], 
+        messages: str | List[Message], 
         response_model: BaseModel | None = None
     ) -> str | BaseModel:
         """
         Generate a response from the OpenAI provider.
 
         Args:
-            messages (str | List[Dict[str, Any]]): The messages to send to the provider.
+            messages (str | List[Message]): The messages to send to the provider.
             response_model (BaseModel | None, optional): The response model to use. (Defaults to None)
 
         Returns:
             str | BaseModel: The response from the provider.
         """
         if isinstance(self.history, list):
-            if isinstance(messages, list):
-                messages = self.history + messages
+            if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
+                messages = self.history + [msg.model_dump(mode="json") for msg in messages]
+                self.history = messages
+            elif isinstance(messages, str):
+                messages = self.history + [Message(role=Role.user, content=messages).model_dump(mode="json")]
                 self.history = messages
             else:
-                messages = self.history + [{"role": "user", "content": messages}]
-                self.history = messages
+                raise ValueError("Invalid message type")
         args = {
             "model": self.model,
             "input": messages
@@ -107,5 +118,5 @@ class OpenAIProvider(Provider):
             response = self.client.responses.create(**args)
             result = response.output_text
         if isinstance(self.history, list):
-            self.history.append({"role": "assistant", "content": result})
+            self.history.append({"role": Role.model.value, "content": result})
         return result
