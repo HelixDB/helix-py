@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List
+
+class Message(BaseModel, ABC):
+    pass
 
 class Provider(ABC):
     @abstractmethod
@@ -14,7 +17,7 @@ class Provider(ABC):
     @abstractmethod
     def generate(
         self, 
-        messages: str | List[Dict[str, Any]],
-        response_model: type[BaseModel] | None = None
-    ) -> str | Dict[str, Any]:
+        messages: str | List[Message],
+        response_model: BaseModel | None = None
+    ) -> str | BaseModel:
         ...
