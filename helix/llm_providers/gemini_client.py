@@ -58,7 +58,7 @@ class GeminiProvider(Provider):
 
     def generate(
         self,
-        messages: str | List[Message],
+        messages: str | List[Message] | List[dict],
         response_model: BaseModel | None = None
     ) -> str | BaseModel:
         if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
@@ -73,6 +73,16 @@ class GeminiProvider(Provider):
                 self.history = messages
             else:
                 messages = [Message(role=Role.user, parts=[Part(text=messages)]).model_dump(mode="json")]
+        elif isinstance(messages, list) and all(isinstance(msg, dict) for msg in messages):
+            try:
+                validated = [Message.model_validate(msg).model_dump(mode="json") for msg in messages]
+                if isinstance(self.history, list):
+                    messages = self.history + validated
+                    self.history = messages
+                else:
+                    messages = validated
+            except Exception as e:
+                raise ValueError("Invalid message type")
         else:
             raise ValueError("Invalid message type")
         args = {

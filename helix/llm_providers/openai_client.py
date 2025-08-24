@@ -84,14 +84,14 @@ class OpenAIProvider(Provider):
 
     def generate(
         self, 
-        messages: str | List[Message], 
+        messages: str | List[Message] | List[dict], 
         response_model: BaseModel | None = None,
     ) -> str | BaseModel:
         """
         Generate a response from the OpenAI provider.
 
         Args:
-            messages (str | List[Message]): The messages to send to the provider.
+            messages (str | List[Message] | List[dict]): The messages to send to the provider.
             response_model (BaseModel | None, optional): The response model to use. (Defaults to None)
 
         Returns:
@@ -109,6 +109,16 @@ class OpenAIProvider(Provider):
                 self.history = messages
             else:
                 messages = [Message(role=Role.user, content=messages).model_dump(mode="json")]
+        elif isinstance(messages, list) and all(isinstance(msg, dict) for msg in messages):
+            try:
+                validated = [Message.model_validate(msg).model_dump(mode="json") for msg in messages]
+                if isinstance(self.history, list):
+                    messages = self.history + validated
+                    self.history = messages
+                else:
+                    messages = validated
+            except Exception as e:
+                raise ValueError("Invalid message type")
         else:
             raise ValueError("Invalid message type")
 

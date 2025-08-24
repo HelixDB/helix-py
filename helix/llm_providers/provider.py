@@ -17,7 +17,7 @@ class Provider(ABC):
     @abstractmethod
     def generate(
         self, 
-        messages: str | List[Message],
+        messages: str | List[Message] | List[dict],
         response_model: BaseModel | None = None
     ) -> str | BaseModel:
         ...
