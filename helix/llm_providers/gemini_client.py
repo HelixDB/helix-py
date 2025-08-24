@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from enum import Enum
 from typing import List, Any
 from dotenv import load_dotenv
+import json
 import os
 import asyncio
 
@@ -42,6 +43,7 @@ class GeminiProvider(Provider):
         self.temperature = temperature
         self.thinking_budget = thinking_budget
         self.history = [] if history else None
+        self.mcp_enabled = False
         self.mcp_client = None
         self._loop = asyncio.new_event_loop()
 
@@ -51,6 +53,7 @@ class GeminiProvider(Provider):
         url: str = DEFAULT_MCP_URL,
     ) -> bool:
         self.mcp_client = Client(url)
+        self.mcp_enabled = True
         return True
 
     def generate(
@@ -83,7 +86,8 @@ class GeminiProvider(Provider):
         if response_model is not None:
             config_args["response_mime_type"] = "application/json"
             config_args["response_schema"] = response_model
-        if self.mcp_client is not None:
+        if self.mcp_enabled:
+            print("Detected MCP Server")
             async def gen():
                 async with self.mcp_client:
                     config_args["tools"] = [self.mcp_client.session]
@@ -101,5 +105,6 @@ class GeminiProvider(Provider):
         else:
             result = response.text
         if isinstance(self.history, list):
-            self.history.append(Message(role=Role.model, parts=[Part(text=result)]).model_dump(mode="json"))
+            text = result if isinstance(result, str) else json.dumps(result.model_dump(mode="json"))
+            self.history.append(Message(role=Role.model, parts=[Part(text=text)]).model_dump(mode="json"))
         return result
