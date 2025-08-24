@@ -67,7 +67,6 @@ class OpenAIProvider(Provider):
     def enable_mcps(
         self,
         name: str,
-        description: str,
         url: str = DEFAULT_MCP_URL,
     ) -> bool:
         """
@@ -75,7 +74,6 @@ class OpenAIProvider(Provider):
 
         Args:
             name (str): The name of the server.
-            description (str): The description of the server.
             url (str, optional): The URL of the server. (Defaults to "http://localhost:8000/mcp/")
 
         Returns:
@@ -108,8 +106,6 @@ class OpenAIProvider(Provider):
                 self.history = messages
             else:
                 raise ValueError("Invalid message type")
-
-        print(messages)
 
         if response_model is not None:
             self.agent_configs["output_type"] = AgentOutputSchema(
