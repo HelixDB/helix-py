@@ -72,68 +72,6 @@ class hnswsearch(Query):
             print(f"{RHELIX} Failed to parse response as JSON", file=sys.stderr)
             return None
 
-# mcp server queries
-class init(Query):
-    def __init__(self):
-        # TODO: do this better/more simple
-        super().__init__(endpoint="mcp/" + self.__class__.__name__)
-
-    def query(self) -> List[Payload]:
-        return [{}]
-
-    def response(self, response):
-        return response.get("res") # conn id
-
-class call_tool(Query):
-    def __init__(self, payload: dict):
-        super().__init__(endpoint="mcp/" + self.__class__.__name__)
-        self.connection_id = payload.get("connection_id")
-        self.tool = payload.get("tool")
-        self.args = payload.get("args")
-
-    def query(self) -> List[Payload]:
-        return [{
-            "connection_id": self.connection_id,
-            "tool": self.tool,
-            "args": self.args,
-        }]
-
-    def response(self, response):
-        return response
-
-class next(Query):
-    def __init__(self, conn_id: str):
-        super().__init__(endpoint="mcp/" + self.__class__.__name__)
-        self.connection_id = conn_id
-
-    def query(self) -> List[Payload]:
-        return [{"connection_id": self.connection_id}]
-
-    def response(self, response):
-        return response
-
-class collect(Query):
-    def __init__(self, conn_id: str):
-        super().__init__(endpoint="mcp/" + self.__class__.__name__)
-        self.connection_id = conn_id
-
-    def query(self) -> List[Payload]:
-        return [{ "connection_id": self.connection_id }]
-
-    def response(self, response):
-        return response
-
-class schema_resource(Query):
-    def __init__(self, conn_id: str):
-        super().__init__(endpoint="mcp/" + self.__class__.__name__)
-        self.connection_id = conn_id
-
-    def query(self) -> List[Payload]:
-        return [{"connection_id": self.connection_id}]
-
-    def response(self, response):
-        return response
-
 class Client:
     """
     A client for interacting with the Helix server.
