@@ -25,6 +25,16 @@ class Message(BaseModel):
     parts: List[Part]
 
 class GeminiProvider(Provider):
+    """
+    Gemini LLM Provider
+
+    Args:
+        api_key (str, optional): The API key to use. (Defaults to None)
+        model (str, optional): The model to use. (Defaults to "gemini-2.0-flash")
+        temperature (float, optional): The temperature setting to use. (Defaults to None)
+        thinking_budget (float, optional): The thinking budget to use. (Defaults to 0)
+        history (bool, optional): Whether to use history. (Defaults to False)
+    """
     def __init__(
         self,
         api_key: str=None,
@@ -52,6 +62,16 @@ class GeminiProvider(Provider):
         name: str,
         url: str = DEFAULT_MCP_URL,
     ) -> bool:
+        """
+        Enable MCPs for the Gemini provider.
+
+        Args:
+            name (str): The name of the server.
+            url (str, optional): The URL of the server. (Defaults to "http://localhost:8000/mcp/")
+
+        Returns:
+            bool: True if MCPs are enabled, False otherwise.
+        """
         self.mcp_client = Client(url)
         self.mcp_enabled = True
         return True
@@ -61,6 +81,16 @@ class GeminiProvider(Provider):
         messages: str | List[Message] | List[dict],
         response_model: BaseModel | None = None
     ) -> str | BaseModel:
+        """
+        Generate a response from the Gemini provider.
+
+        Args:
+            messages (str | List[Message] | List[dict]): The messages to send to the provider.
+            response_model (BaseModel | None, optional): The response model to use. (Defaults to None)
+
+        Returns:
+            str | BaseModel: The response from the provider.
+        """
         if isinstance(messages, list) and all(isinstance(msg, Message) for msg in messages):
             if isinstance(self.history, list):
                 messages = self.history + [msg.model_dump(mode="json") for msg in messages]
