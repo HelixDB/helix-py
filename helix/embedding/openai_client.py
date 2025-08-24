@@ -1,4 +1,5 @@
 from helix.embedding.embedder import Embedder
+from helix.types import GHELIX
 from openai import OpenAI
 from typing import List
 from tqdm import tqdm
@@ -49,4 +50,4 @@ class OpenAIEmbedder(Embedder):
         Returns:
             List[List[float]]: The list of embeddings.
         """
-        return [vector.embedding for vector in tqdm(self.client.embeddings.create(input=data_list, model=self.model, dimensions=self.dimensions).data, total=len(data_list), desc="Embedding", file=sys.stderr)]
+        return [vector.embedding for vector in tqdm(self.client.embeddings.create(input=data_list, model=self.model, dimensions=self.dimensions).data, total=len(data_list), desc=f"{GHELIX} Embedding", file=sys.stderr)]

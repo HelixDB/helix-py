@@ -1,2 +1,3 @@
 from .embedder import Embedder
-from .openai import OpenAIEmbedder
+from .openai_client import OpenAIEmbedder
+from .gemini_client import GeminiEmbedder
