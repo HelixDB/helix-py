@@ -81,31 +81,130 @@ helix_instance = Instance("helixdb-cfg", 6969, verbose=True)
 and from there you can interact with it like you would with the `Client`
 
 ### Providers
-We also provide an ollama interface. This will be expanded to include many other providers in the future.
-```python
-from helix.providers import OllamaClient, OpenAIClient
-ollama_client = OllamaClient(use_history=True, model="mistral:latest")
-# or
-openai_client = OpenAIClient(use_history=False, model="gpt-4o")
+Helix has LLM interfaces for popular LLM providers. 
 
-while True:
-    prompt = input(">>> ")
-    res = ollama_client.request(prompt, stream=True)
+Available providers:
+- `OpenAIProvider`
+- `GeminiProvider`
+- `AnthropicProvider`
+
+All providers expose two methods:
+- `enable_mcps(name: str, url: str=...) -> bool` to enable Helix MCP tools
+- `generate(messages, response_model: BaseModel | None=None) -> str | BaseModel`
+
+The generate method supports messages in the 2 formats:
+- **Free-form text**: pass a string
+- **Message lists**: pass a list of `dict` or provider-specific `Message` models
+
+It also supports structured outputs by passing a Pydantic model to get validated results.
+
+Minimal examples (see `examples/llm_providers/providers.ipynb` for full demos):
+```python
+from pydantic import BaseModel
+
+# OpenAI
+from helix.providers.openai_client import OpenAIProvider
+openai_llm = OpenAIProvider(
+    name="openai-llm",
+    instructions="You are a helpful assistant.",
+    model="gpt-5-nano",
+    history=True
+)
+print(openai_llm.generate("Hello!"))
+
+class Person(BaseModel):
+    name: str
+    age: int
+    occupation: str
+
+print(openai_llm.generate([{"role": "user", "content": "Who am I?"}], Person))
+
+# Gemini
+from helix.providers.gemini_client import GeminiProvider
+gemini_llm = GeminiProvider(model="gemini-2.0-flash", history=True)
+print(gemini_llm.generate("Hello!"))
+
+# Anthropic
+from helix.providers.anthropic_client import AnthropicProvider
+anthropic_llm = AnthropicProvider(model="claude-3-5-haiku-20241022", history=True)
+print(anthropic_llm.generate("Hello!"))
+```
+
+To enable MCP tools with a running Helix MCP server (see MCP section):
+```python
+openai_llm.enable_mcps("helix-mcp")         # uses default http://localhost:8000/mcp/
+gemini_llm.enable_mcps("helix-mcp")         # uses default http://localhost:8000/mcp/
+anthropic_llm.enable_mcps("helix-mcp", url="https://your-remote-mcp/...")
+```
+
+Notes:
+- OpenAI GPT-5 family models support reasoning while other models use temperature.
+- Anthropic local streamable MCP is not supported; use a URL-based MCP.
+
+### Embedders
+Helix has embedder interfaces for popular embedding providers.
+
+Available embedders:
+- `OpenAIEmbedder`
+- `GeminiEmbedder`
+- `VoyageAIEmbedder`
+
+Each embedder implements:
+- `embed(text: str, **kwargs)` returns a vector `[F64]`
+- `embed_batch(texts: List[str], **kwargs)` returns a list of vectors `[F64]`
+
+Examples (see `examples/llm_providers/providers.ipynb` for more):
+```python
+from helix.embedding.openai_client import OpenAIEmbedder
+openai_embedder = OpenAIEmbedder()  # requires OPENAI_API_KEY
+vec = openai_embedder.embed("Hello world")
+batch = openai_embedder.embed_batch(["a", "b", "c"])
+
+from helix.embedding.gemini_client import GeminiEmbedder
+gemini_embedder = GeminiEmbedder()
+vec = gemini_embedder.embed("doc text", task_type="RETRIEVAL_DOCUMENT")
+
+from helix.embedding.voyageai_client import VoyageAIEmbedder
+voyage_embedder = VoyageAIEmbedder()
+vec = voyage_embedder.embed("query text", input_type="query")
 ```
 
 ### MCP
-Helix's custom mcp server backend is built into the db and the `mcp_server.py` server can be used
-to interface with that. To get started with this, you can for example use uv:
+Helix includes a ready-to-run MCP server exposing graph traversal and search tools from your helix instance.
 
-```bash
-uv init project
-cp mcp_server.py project
-cd project
-uv venv && source .venv/bin/activate
-uv add helix-py "mcp[cli]"
+Key classes are in `helix/mcp.py`:
+- `MCPServer(name, client, tool_config=ToolConfig(), embedder=None, embedder_args={})`
+- `ToolConfig` to enable/disable tools (e.g., `search_vector`, `search_vector_text`, `search_keyword`, traversal tools)
+
+Starting a server (simple):
+```python
+# examples/mcp_server.py
+from helix.client import Client
+from helix.mcp import MCPServer, ToolConfig
+from helix.embedding.openai_client import OpenAIEmbedder
+
+helix_client = Client(local=True)
+openai_embedder = OpenAIEmbedder()  # needs OPENAI_API_KEY
+mcp_server = MCPServer("helix-mcp", helix_client, tool_config=tool_config, embedder=openai_embedder)
+mcp_server.run()  # streamable-http on http://127.0.0.1:8000/mcp/
 ```
-then for claude-desktop, for example, add this to
-`~/Library/Application Support/Claude/claude_desktop_config.json` adjusting paths of course
+
+Alternative app entry (with explicit host/port):
+```python
+# apps/mcp_server.py
+from helix.client import Client
+from helix.mcp import MCPServer
+from helix.embedding.openai_client import OpenAIEmbedder
+
+client = Client(local=True, port=6969)
+openai_embedder = OpenAIEmbedder()
+mcp_server = MCPServer("helix-mcp", client, embedder=openai_embedder)
+
+if __name__ == "__main__":
+    mcp_server.run(transport="streamable-http", host="127.0.0.1", port=8000)
+```
+
+Configure Claude Desktop to use the local MCP server (adjust paths):
 ```json
 {
   "mcpServers": {
@@ -113,7 +212,7 @@ then for claude-desktop, for example, add this to
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/user/helix-py/project",
+        "/absolute/path/to/your/app/folder",
         "run",
         "mcp_server.py"
       ]
@@ -121,6 +220,13 @@ then for claude-desktop, for example, add this to
   }
 }
 ```
+
+Environment variables:
+- `OPENAI_API_KEY`, `GEMINI_API_KEY`, `VOYAGEAI_API_KEY`, `ANTHROPIC_API_KEY` as needed.
+
+MCP tools overview (enabled via `ToolConfig`):
+- Traversal: `n_from_type`, `e_from_type`, `out_step`, `out_e_step`, `in_step`, `in_e_step`, `filter_items`
+- Search: `search_vector` (requires `embedder`), `search_vector_text` (server-side embedding), `search_keyword`
 
 ### Schema
 To dynamically create, load, and edit your Helixdb schema, you can use the `Schema` class.
