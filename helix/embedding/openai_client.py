@@ -3,6 +3,7 @@ from helix.types import GHELIX
 from openai import OpenAI
 from typing import List
 from tqdm import tqdm
+from dotenv import load_dotenv
 import sys
 import os
 
@@ -21,7 +22,8 @@ class OpenAIEmbedder(Embedder):
     """
     def __init__(self, api_key: str=None, model: str=DEFAULT_MODEL, dimensions: int=DEFAULT_DIMENSIONS, base_url: str=None):
         if api_key is None:
-            api_key = os.environ.get("OPENAI_API_KEY")
+            load_dotenv()
+            api_key = os.getenv("OPENAI_API_KEY")
             if api_key is None:
                 raise ValueError("API key not provided and OPENAI_API_KEY environment variable not set.")
         self.client = OpenAI(api_key=api_key, base_url=base_url)

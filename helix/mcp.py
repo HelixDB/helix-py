@@ -301,7 +301,6 @@ class MCPServer:
             """
             try:
                 if self.verbose: print(f"{GHELIX} MCP n_from_type", file=sys.stderr)
-                print({'connection_id': args.connection_id, 'data': {'node_type': args.node_type}})
                 result = self.client.query('mcp/n_from_type', {'connection_id': args.connection_id, 'data': {'node_type': args.node_type}})[0]
                 return {} if result is None else result
             except Exception as e:

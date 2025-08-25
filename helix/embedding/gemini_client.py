@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 from typing import List
 from tqdm import tqdm
+from dotenv import load_dotenv
 import sys
 import os
 
@@ -21,7 +22,8 @@ class GeminiEmbedder(Embedder):
     """
     def __init__(self, api_key: str=None, model: str=DEFAULT_MODEL, dimensions: int=DEFAULT_DIMENSIONS):
         if api_key is None:
-            api_key = os.environ.get("GEMINI_API_KEY")
+            load_dotenv()
+            api_key = os.getenv("GEMINI_API_KEY")
             if api_key is None:
                 raise ValueError("API key not provided and GEMINI_API_KEY environment variable not set.")
         self.client = genai.Client(api_key=api_key)
