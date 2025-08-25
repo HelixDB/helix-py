@@ -20,16 +20,12 @@
 
 from helix.client import Client
 from helix.mcp import MCPServer
-from helix.embedding.openai_client import OpenAIEmbedder
 
 # Create a Helix client
 client = Client(local=True, port=6969)
 
-# Create an embedder (needs OPENAI_API_KEY in environment)
-openai_embedder = OpenAIEmbedder()
-
 # Create an MCP server
-mcp_server = MCPServer("helix-mcp", client, embedder=openai_embedder)
+mcp_server = MCPServer("helix-mcp", client)
 
 if __name__ == "__main__":
   # Run the MCP server on localhost port 8000 with streamable-http transport
