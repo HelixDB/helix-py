@@ -1,4 +1,4 @@
-from helix.llm_providers.provider import Provider
+from helix.providers.provider import Provider
 import anthropic
 from pydantic import BaseModel
 from enum import Enum

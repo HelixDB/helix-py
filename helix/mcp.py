@@ -180,12 +180,14 @@ class MCPServer:
         verbose: bool=True,
         tool_config: ToolConfig = ToolConfig(),
         embedder: Optional[Embedder] = None,
+        embedder_args: Optional[Dict[str, Any]] = {},
     ):
         self.mcp = FastMCP(name, **mcp_args)
         self.client = client
         self.verbose = verbose
         self.tool_config = tool_config
         self.embedder = embedder
+        self.embedder_args = embedder_args
         if embedder is None:
             self.tool_config.search_vector = False
             self.tool_config.search_vector_text = True
@@ -439,7 +441,7 @@ class MCPServer:
             """
             try:
                 if self.verbose: print(f"{GHELIX} MCP search_vector", file=sys.stderr)
-                vector = self.embedder.embed(args.query)
+                vector = self.embedder.embed(args.query, **self.embedder_args)
                 result = self.client.query('mcp/search_vector', {'connection_id': args.connection_id, 'data': {'vector': vector, 'k': args.k, 'min_score': args.min_score}})[0]
                 if isinstance(result, dict):
                     result = [result]

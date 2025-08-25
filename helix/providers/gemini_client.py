@@ -1,4 +1,4 @@
-from helix.llm_providers.provider import Provider
+from helix.providers.provider import Provider
 from google import genai
 from google.genai import types
 from fastmcp import Client
@@ -127,7 +127,6 @@ class GeminiProvider(Provider):
             config_args["response_mime_type"] = "application/json"
             config_args["response_schema"] = response_model
         if self.mcp_enabled:
-            print("Detected MCP Server")
             async def gen():
                 async with self.mcp_client:
                     config_args["tools"] = [self.mcp_client.session]

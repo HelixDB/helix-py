@@ -5,7 +5,6 @@ from helix.client import Client, Query, hnswinsert, hnswsearch
 from helix.types import Payload, EdgeType, Hnode, Hedge, Hvector, json_to_helix
 from helix.loader import Loader
 from helix.instance import Instance
-from helix.providers import OllamaClient, OpenAIClient
 from helix.schema import Schema
 from helix.chunk import Chunk
 from helix.mcp import MCPServer, ToolConfig

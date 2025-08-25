@@ -1,4 +1,4 @@
-from helix.llm_providers.provider import Provider
+from helix.providers.provider import Provider
 from agents import Agent, ModelSettings, Runner, AgentOutputSchema
 from openai.types.shared import Reasoning
 from agents.mcp import MCPServerStreamableHttp
@@ -129,7 +129,7 @@ class OpenAIProvider(Provider):
         else:
             self.agent_configs.pop("output_type", None)
         
-        async def run():
+        async def gen():
             if self.mcp_server_config:
                 async with MCPServerStreamableHttp(
                     name=self.mcp_server_config["name"],
@@ -144,7 +144,7 @@ class OpenAIProvider(Provider):
                 agent = Agent(**self.agent_configs)
                 return await Runner.run(starting_agent=agent, input=messages)
         
-        response = asyncio.run(run())
+        response = asyncio.run(gen())
         if response_model is not None:
             result = response_model.model_validate(response.final_output)
         else:
