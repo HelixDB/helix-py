@@ -2,12 +2,11 @@ from helix.client import Client
 from helix.mcp import MCPServer, ToolConfig
 from helix.embedding.openai_client import OpenAIEmbedder
 import asyncio
-import os
 
 # Create a Helix client
 helix_client = Client(local=True)
 
-# Create an embedder
+# Create an embedder (needs OPENAI_API_KEY in environment)
 openai_embedder = OpenAIEmbedder()
 
 # Disable tools (eg. search_vector_text)
