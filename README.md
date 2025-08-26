@@ -1,11 +1,10 @@
 # helix-py
 [Helix-DB](https://github.com/HelixDB/helix-db) | [Homepage](https://www.helix-db.com/) | [Documentation](https://docs.helix-db.com/introduction/overview) | [PyPi](https://pypi.org/project/helix-py/)
 
-helix-py is a python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
-graph-vector database written in rust. With a pytorch-like query interface, it supports vector
-operations and custom queries, ideal for tasks like similarity search and knowledge graph
-construction. This library is meant to extend helix-db to be more easily used in machine learning
-applications.
+helix-py is a Python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
+powerful graph-vector database written in Rust. It provides both a simple query interface and a PyTorch-like
+front-end for defining and executing custom graph queries and vector-based operations. This makes it
+well-suited for use cases such as similarity search, knowledge graph construction, and machine learning pipelines.
 
 ## Installation
 
@@ -24,18 +23,21 @@ helix install
 ## Features
 
 ### Queries
-helix-py using a pytorch like front-end to creating queries. Like you would define a neural network
-forward pass, you can do the same thing for a helix-db query. We provide some default queries in
-`helix/client.py` to get started with inserting and search vectors, but you can also define you're
-own queries if you plan on doing more complex things. For example, for this hql query
-```sql
+helix-py allows users to define a PyTorch-like manner, similar to how
+you would define a neural network's forward pass. You can use built-in queries in `helix/client.py`
+to get started with inserting and search vectors, or you can define your own queries for more complex workflows.
+
+**Pytorch-like Query**
+
+```rust
 QUERY add_user(name: String, age: I64) =>
   usr <- AddV<User>({name: name, age: age})
   RETURN usr
 ```
-you would write
+You can define a matching Python class:
 ```python
 from helix import Query
+from helix.types import Payload
 
 class add_user(Query):
     def __init__(self, name: str, age: int):
@@ -43,13 +45,14 @@ class add_user(Query):
         self.name = name
         self.age = age
 
-    def query(self) -> List[Any]:
+    def query(self) -> Payload:
         return [{ "name": self.name, "age": self.age }]
 
     def response(self, response):
-        return response.get("res")
+        return response
 ```
-for your python script. Make sure that the Query.query method returns a list of objects.
+
+Make sure that the `Query.query` method returns a list of objects.
 
 ### Client
 To setup a simple `Client` to interface with a running helix instance:
@@ -63,13 +66,16 @@ data = helix.Loader("path/to/data", cols=["vecs"])
 
 my_query = [0.32, ..., -1.321]
 nearest = db.query(hnswsearch(my_query)) # query hnsw index
-```
 
-If you don't want to define a class/methods for every query you have, you can also simply
-use
-```python
-db.query("add_user", { "name", "John", "age": 34 })
+# Calling your own query
+# Standard
+db.query('add_user', {"name": "John", "age": 20})
+
+# Pytorch-like
+db.query(add_user("John", 20))
 ```
+The default port is `6969`, but you can change it by passing in the `port` parameter.
+For cloud instances, you can pass in the `api_endpoint` parameter.
 
 ### Instance
 To setup a simple `Instance` that automatically starts and stops a helix instance with respect
@@ -78,7 +84,11 @@ to the lifetime of the program, to interface with a `helixdb-cfg` directory you 
 from helix.instance import Instance
 helix_instance = Instance("helixdb-cfg", 6969, verbose=True)
 ```
-and from there you can interact with it like you would with the `Client`
+> `helixdb-cfg` is the directory where the configuration files are stored.
+
+and from there you can interact with the instance using `Client`.
+
+The instance will be automatically stopped when the script exits.
 
 ### Providers
 Helix has LLM interfaces for popular LLM providers. 
@@ -98,7 +108,7 @@ The generate method supports messages in the 2 formats:
 
 It also supports structured outputs by passing a Pydantic model to get validated results.
 
-Minimal examples (see `examples/llm_providers/providers.ipynb` for full demos):
+Examples (see `examples/llm_providers/providers.ipynb` for full demos):
 ```python
 from pydantic import BaseModel
 
@@ -118,19 +128,9 @@ class Person(BaseModel):
     occupation: str
 
 print(openai_llm.generate([{"role": "user", "content": "Who am I?"}], Person))
-
-# Gemini
-from helix.providers.gemini_client import GeminiProvider
-gemini_llm = GeminiProvider(model="gemini-2.0-flash", history=True)
-print(gemini_llm.generate("Hello!"))
-
-# Anthropic
-from helix.providers.anthropic_client import AnthropicProvider
-anthropic_llm = AnthropicProvider(model="claude-3-5-haiku-20241022", history=True)
-print(anthropic_llm.generate("Hello!"))
 ```
 
-To enable MCP tools with a running Helix MCP server (see MCP section):
+To enable MCP tools with a running Helix MCP server (see [MCP section](#mcp)):
 ```python
 openai_llm.enable_mcps("helix-mcp")         # uses default http://localhost:8000/mcp/
 gemini_llm.enable_mcps("helix-mcp")         # uses default http://localhost:8000/mcp/
@@ -252,7 +252,7 @@ schema.save()
 
 ### Chunking
 
-Helix uses Chonkie (https://chonkie.ai/) chunking methods to split text into manageable pieces for processing and embedding:
+Helix uses [Chonkie](https://chonkie.ai/) chunking methods to split text into manageable pieces for processing and embedding:
 
 ```python
 from helix import Chunk
@@ -269,7 +269,12 @@ texts = ["Document 1...", "Document 2...", "Document 3..."]
 batch_chunks = Chunk.sentence_chunk(texts)
 ```
 
-You can find all the different chunking examples inside of https://docs.helix-db.com/features/chunking/helix-chunking
+You can find all the different chunking examples inside of [the documentation](https://docs.helix-db.com/features/chunking/helix-chunking).
+
+## Loader
+The loader (`helix/loader.py`) currently supports `.parquet`, `.fvecs`, and `.csv` data. Simply pass in the path to your
+file or files and the columns you want to process and the loader does the rest for you and is easy to integrate with
+your queries
 
 ## License
 helix-py is licensed under the The AGPL (Affero General Public License).
