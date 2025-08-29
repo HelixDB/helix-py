@@ -15,10 +15,10 @@ members = [
 
 [project]
 name = "helix-py"
-version = "0.2.26"
+version = "0.2.27"
 authors = [{ name = "HelixDB Team", email = "founders@helix-db.com" }]
-maintainers = [{ name = "Lukas Nitzsche", email = "lukasnitzsche@yahoo.com" }, { name = "Xavier Cochran", email = "xav@helix-db.com" }, { name = "Gahn Wuwong", email = "gahn@helix-db.com" }]
-description = "helix-db python lib + workflows"
+maintainers = [{ name = "Gahn Wuwong", email = "gahn@helix-db.com" }]
+description = "HelixDB Python SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 liscense = { file = "LICENSE" }
