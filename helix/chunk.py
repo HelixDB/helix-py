@@ -1,4 +1,4 @@
-from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, SDPMChunker, LateChunker, NeuralChunker, SlumberChunker
+from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, LateChunker, NeuralChunker, SlumberChunker
 from chonkie.genie import GeminiGenie
 from typing import List, Optional, Union, Any
 from tokenizers import Tokenizer
@@ -142,28 +142,30 @@ class Chunk:
     # this is for chonkie semantic chunker
     @staticmethod
     def semantic_chunk(text: Union[str, List[str]], embedding_model: str = "minishlab/potion-base-8M", 
-                      threshold: Union[float, int, str] = "auto", chunk_size: int = 2048, 
-                      mode: str = "window", min_sentences: int = 1, similarity_window: int = 1,
-                      min_chunk_size: int = 2, min_characters_per_sentence: int = 12,
-                      threshold_step: float = 0.01, 
+                      threshold: float = 0.8, chunk_size: int = 2048, 
+                      similarity_window: int = 3, min_sentences_per_chunk: int = 1,
+                      min_characters_per_sentence: int = 24, skip_window: int = 0,
+                      filter_window: int = 5, filter_polyorder: int = 3, filter_tolerance: float = 0.2,
                       delim: Union[str, List[str]] = ['.', '!', '?', '\n'],
-                      include_delim: Optional[str] = "prev") -> Union[List[str], List[List[str]]]:
+                      include_delim: Optional[str] = "prev", **embedding_kwargs) -> Union[List[str], List[List[str]]]:
         """
         Chunk text based on semantic similarity between sentences.
 
         Args:
             text (Union[str, List[str]]): Text to chunk (single string or list of strings).
             embedding_model (str, optional): Model to use for embeddings. Defaults to "minishlab/potion-base-8M".
-            threshold (Union[float, int, str], optional): Similarity threshold for chunking. Defaults to "auto".
+            threshold (float, optional): Similarity threshold for chunking (0-1). Defaults to 0.8.
             chunk_size (int, optional): Maximum size of each chunk in tokens. Defaults to 2048.
-            mode (str, optional): Chunking mode ("window" or "cluster"). Defaults to "window".
-            min_sentences (int, optional): Minimum sentences per chunk. Defaults to 1.
-            similarity_window (int, optional): Window size for similarity calculation. Defaults to 1.
-            min_chunk_size (int, optional): Minimum number of sentences per chunk. Defaults to 2.
-            min_characters_per_sentence (int, optional): Minimum characters per sentence. Defaults to 12.
-            threshold_step (float, optional): Step size for threshold adjustment. Defaults to 0.01.
+            similarity_window (int, optional): Window size for similarity calculation. Defaults to 3.
+            min_sentences_per_chunk (int, optional): Minimum sentences per chunk. Defaults to 1.
+            min_characters_per_sentence (int, optional): Minimum characters per sentence. Defaults to 24.
+            skip_window (int, optional): Number of groups to skip when merging similar content. Defaults to 0.
+            filter_window (int, optional): Window length for Savitzky-Golay filter. Defaults to 5.
+            filter_polyorder (int, optional): Polynomial order for Savitzky-Golay filter. Defaults to 3.
+            filter_tolerance (float, optional): Tolerance for filter boundary detection. Defaults to 0.2.
             delim (Union[str, List[str]], optional): Sentence delimiters. Defaults to ['.', '!', '?', '\n'].
             include_delim (Optional[str], optional): How to include delimiters ("prev", "next", None). Defaults to "prev".
+            **embedding_kwargs: Additional keyword arguments for the embedding model.
 
         Returns:
             Union[List[str], List[List[str]]]: List of semantically coherent text chunks.
@@ -172,65 +174,19 @@ class Chunk:
             embedding_model=embedding_model,
             threshold=threshold,
             chunk_size=chunk_size,
-            mode=mode,
-            min_sentences=min_sentences,
             similarity_window=similarity_window,
-            min_chunk_size=min_chunk_size,
+            min_sentences_per_chunk=min_sentences_per_chunk,
             min_characters_per_sentence=min_characters_per_sentence,
-            threshold_step=threshold_step,
+            skip_window=skip_window,
+            filter_window=filter_window,
+            filter_polyorder=filter_polyorder,
+            filter_tolerance=filter_tolerance,
             delim=delim,
             include_delim=include_delim
         )
         
         return Chunk._process_chunks(chunker, text)
 
-    # this is for chonkie SDPM chunker
-    @staticmethod
-    def sdp_chunk(text: Union[str, List[str]], embedding_model: str = "minishlab/potion-base-8M", 
-                 threshold: Union[float, int, str] = "auto", chunk_size: int = 2048, 
-                 mode: str = "window", min_sentences: int = 1, similarity_window: int = 1,
-                 min_chunk_size: int = 2, min_characters_per_sentence: int = 12,
-                 threshold_step: float = 0.01, 
-                 delim: Union[str, List[str]] = ['.', '!', '?', '\n'],
-                 include_delim: Optional[str] = "prev",
-                 skip_window: int = 1) -> Union[List[str], List[List[str]]]:
-        """
-        Chunk text using the Skip-Distance Proximity Method (SDPM) for enhanced semantic chunking.
-
-        Args:
-            text (Union[str, List[str]]): Text to chunk (single string or list of strings).
-            embedding_model (str, optional): Model to use for embeddings. Defaults to "minishlab/potion-base-8M".
-            threshold (Union[float, int, str], optional): Similarity threshold for chunking. Defaults to "auto".
-            chunk_size (int, optional): Maximum size of each chunk in tokens. Defaults to 2048.
-            mode (str, optional): Chunking mode ("window" or "cluster"). Defaults to "window".
-            min_sentences (int, optional): Minimum sentences per chunk. Defaults to 1.
-            similarity_window (int, optional): Window size for similarity calculation. Defaults to 1.
-            min_chunk_size (int, optional): Minimum number of sentences per chunk. Defaults to 2.
-            min_characters_per_sentence (int, optional): Minimum characters per sentence. Defaults to 12.
-            threshold_step (float, optional): Step size for threshold adjustment. Defaults to 0.01.
-            delim (Union[str, List[str]], optional): Sentence delimiters. Defaults to ['.', '!', '?', '\n'].
-            include_delim (Optional[str], optional): How to include delimiters ("prev", "next", None). Defaults to "prev".
-            skip_window (int, optional): Number of sentences to skip when calculating similarity. Defaults to 1.
-
-        Returns:
-            Union[List[str], List[List[str]]]: List of text chunks with improved semantic coherence.
-        """
-        chunker = SDPMChunker(
-            embedding_model=embedding_model,
-            threshold=threshold,
-            chunk_size=chunk_size,
-            mode=mode,
-            min_sentences=min_sentences,
-            similarity_window=similarity_window,
-            min_chunk_size=min_chunk_size,
-            min_characters_per_sentence=min_characters_per_sentence,
-            threshold_step=threshold_step,
-            delim=delim,
-            include_delim=include_delim,
-            skip_window=skip_window
-        )
-        
-        return Chunk._process_chunks(chunker, text)
 
     # this is for chonkie late chunker
     @staticmethod
