@@ -1,14 +1,12 @@
 from helix.client import Client
-from helix.types import Payload
-from typing import List
-from helix.instance import Instance
+from datetime import datetime, timezone
 
 client = Client(local=True, port=6969)
 
 print("\n" + "-"*20 + "CREATE USERS" + "-"*20)
 users = client.query("create_user", [
-    {"name": "John", "age": 30, "email": "john@example.com", "now": 1722222222},
-    {"name": "Jane", "age": 25, "email": "jane@example.com", "now": 1722222222}
+    {"name": "John", "age": 30, "email": "john@example.com", "now": datetime.now(timezone.utc).isoformat()},
+    {"name": "Jane", "age": 25, "email": "jane@example.com", "now": datetime.now(timezone.utc).isoformat()}
 ])
 print(users)
 user1 = users[0]['user']
@@ -25,7 +23,7 @@ print("\n")
 
 print("-"*20 + "CREATE FOLLOW" + "-"*20)
 print("Jane follows John")
-print(client.query("create_follow", {"follower_id": user1_id, "followed_id": user2_id, "now": 1892222222}))
+print(client.query("create_follow", {"follower_id": user1_id, "followed_id": user2_id, "now": datetime.now(timezone.utc).isoformat()}))
 print("\n")
 
 print("-"*20 + "CREATE POST" + "-"*20)
@@ -34,8 +32,8 @@ content2 = "Sample Post Content Hello World 2"
 print(
     client.query(
         "create_post", [
-            {"user_id": user1_id, "content": content1, "now": 1983333333},
-            {"user_id": user2_id, "content": content2, "now": 1983333333}
+            {"user_id": user1_id, "content": content1, "now": datetime.now(timezone.utc).isoformat()},
+            {"user_id": user2_id, "content": content2, "now": datetime.now(timezone.utc).isoformat()}
         ]
     )[0]['post']
 )

@@ -1,14 +1,14 @@
-QUERY create_user(name: String, age: U32, email: String, now: I32) =>
+QUERY create_user(name: String, age: U32, email: String, now: Date) =>
     user <- AddN<User>({name: name, age: age, email: email, created_at: now, updated_at: now})
     RETURN user
 
-QUERY create_follow(follower_id: ID, followed_id: ID, now: I32) =>
+QUERY create_follow(follower_id: ID, followed_id: ID, now: Date) =>
     follower <- N<User>(follower_id)
     followed <- N<User>(followed_id)
     AddE<Follows>({since: now})::From(follower)::To(followed)
     RETURN "success"
 
-QUERY create_post(user_id: ID, content: String, now: I32) =>
+QUERY create_post(user_id: ID, content: String, now: Date) =>
     user <- N<User>(user_id)
     post <- AddN<Post>({content: content, created_at: now, updated_at: now})
     AddE<Created>({created_at: now})::From(user)::To(post)
