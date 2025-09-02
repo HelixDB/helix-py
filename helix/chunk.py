@@ -294,4 +294,7 @@ class Chunk:
     
     @staticmethod
     def pdf_markdown(source: Union[str, requests.Response, Path, BinaryIO]) -> str:
-        return Chunk.md.convert(source).text_content
+        try:
+            return Chunk.md.convert(source).text_content
+        except Exception as e:
+            raise RuntimeError(f"Failed to convert PDF to markdown: {e}")
