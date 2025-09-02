@@ -1,9 +1,14 @@
 from chonkie import TokenChunker, SentenceChunker, RecursiveChunker, RecursiveRules, CodeChunker, SemanticChunker, LateChunker, NeuralChunker, SlumberChunker
 from chonkie.genie import GeminiGenie
-from typing import List, Optional, Union, Any
+import requests
+from pathlib import Path
+from markitdown import MarkItDown
+from typing import List, Optional, Union, Any, BinaryIO
 from tokenizers import Tokenizer
 
 class Chunk:
+    md = MarkItDown()
+
     # this method helps handle the common chunking logic e.g single text or batch text
     @staticmethod
     def _process_chunks(chunker, text: Union[str, List[str]]) -> Union[List[str], List[List[str]]]:
@@ -287,3 +292,6 @@ class Chunk:
         
         return Chunk._process_chunks(chunker, text)
     
+    @staticmethod
+    def pdf_markdown(source: Union[str, requests.Response, Path, BinaryIO]) -> str:
+        return Chunk.md.convert(source).text_content
