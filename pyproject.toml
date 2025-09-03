@@ -15,7 +15,7 @@ members = [
 
 [project]
 name = "helix-py"
-version = "0.2.27"
+version = "0.2.28"
 authors = [{ name = "HelixDB Team", email = "founders@helix-db.com" }]
 maintainers = [{ name = "Gahn Wuwong", email = "gahn@helix-db.com" }]
 description = "HelixDB Python SDK"
