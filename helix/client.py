@@ -82,6 +82,7 @@ class Client:
         port (int, optional): The port to use for the Helix server. Defaults to 6969.
         api_endpoint (str, optional): The API endpoint to use for the Helix server.
         verbose (bool, optional): Whether to print verbose output or not. Defaults to True.
+        max_workers (int, optional): The maximum number of workers to use for concurrent requests. Defaults to 1.
     """
     def __init__(
         self, 
@@ -219,7 +220,7 @@ class Client:
             List[Any]: The response from the helix server.
         """
         with ThreadPoolExecutor(max_workers=min(self.max_workers, len(data))) as executor:
-            futures = [executor.submit(self._send_reqs, [d], total, endpoint, query, False) for d in data]
+            futures = [executor.submit(self._send_reqs, [d], 1, endpoint, query, False) for d in data]
 
             responses = []
             for future in tqdm(futures, total=len(futures), desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not self.verbose):
