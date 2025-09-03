@@ -10,6 +10,7 @@ import os
 
 DEFAULT_MODEL = "gemini-embedding-001"
 DEFAULT_DIMENSIONS = 1536
+MAX_BATCH_SIZE = 100
 
 class GeminiEmbedder(Embedder):
     """
@@ -62,8 +63,8 @@ class GeminiEmbedder(Embedder):
             config.task_type = task_type
         embeddings = []
         pbar = tqdm(total=len(data_list), desc=f"{GHELIX} Embedding", file=sys.stderr)
-        for i in range(0, len(data_list), 100):
-            response = self.client.models.embed_content(contents=data_list[i:i+100], model=self.model, config=config)
+        for i in range(0, len(data_list), MAX_BATCH_SIZE):
+            response = self.client.models.embed_content(contents=data_list[i:i+MAX_BATCH_SIZE], model=self.model, config=config)
             for embedding in response.embeddings:
                 embeddings.append(embedding.values)
                 pbar.update(1)
