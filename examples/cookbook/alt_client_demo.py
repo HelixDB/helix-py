@@ -1,17 +1,17 @@
 from helix.client import Client, Query
 from helix.types import Payload
 from typing import List
-from helix.instance import Instance
+from datetime import datetime, timezone
 
 db = Client(local=True, port=6969)
 
 class create_user(Query):
-    def __init__(self, name:str, age:int, email:str, now:int):
+    def __init__(self, name:str, age:int, email:str, now:datetime):
         super().__init__()
         self.name = name
         self.age = age
         self.email = email
-        self.now = now
+        self.now = now.isoformat()
 
     def query(self) -> List[Payload]:
         return [{"name": self.name, "age": self.age, "email": self.email, "now": self.now}]
@@ -30,11 +30,11 @@ class get_users(Query):
         return response
 
 class create_follow(Query):
-    def __init__(self, follower_id: str, followed_id: str, now: int):
+    def __init__(self, follower_id: str, followed_id: str, now: datetime):
         super().__init__()
         self.follower_id = follower_id
         self.followed_id = followed_id
-        self.now = now
+        self.now = now.isoformat()
 
     def query(self):
         return [{"follower_id": self.follower_id, "followed_id": self.followed_id, "now": self.now}]
@@ -44,11 +44,11 @@ class create_follow(Query):
         return response
 
 class create_post(Query):
-    def __init__(self, user_id: str, content: str, now: int):
+    def __init__(self, user_id: str, content: str, now: datetime):
         super().__init__()
         self.user_id = user_id
         self.content = content
-        self.now = now
+        self.now = now.isoformat()
 
     def query(self):
         return [{"user_id": self.user_id, "content": self.content, "now": self.now}]
@@ -102,8 +102,8 @@ class get_followed_users_posts(Query):
         return response
 
 print("\n" + "-"*20 + "CREATE USERS" + "-"*20)
-user1 = db.query(create_user("John", 30, "john@example.com", 1722222222))
-user2 = db.query(create_user("Jane", 25, "jane@example.com", 1722222222))
+user1 = db.query(create_user("John", 30, "john@example.com", datetime.now(timezone.utc)))
+user2 = db.query(create_user("Jane", 25, "jane@example.com", datetime.now(timezone.utc)))
 print(user1, "\n", user2)
 print("\n")
 
@@ -117,14 +117,14 @@ print("\n")
 
 print("-"*20 + "CREATE FOLLOW" + "-"*20)
 print("Jane follows John")
-print(db.query(create_follow(user1_id, user2_id, 1892222222)))
+print(db.query(create_follow(user1_id, user2_id, datetime.now(timezone.utc))))
 print("\n")
 
 print("-"*20 + "CREATE POST" + "-"*20)
 content1 = "Sample Post Content Hello World 1"
 content2 = "Sample Post Content Hello World 2"
-print(db.query(create_post(user1_id, content1, 1983333333))[0]['post'])
-print(db.query(create_post(user2_id, content2, 1983333333))[0]['post'])
+print(db.query(create_post(user1_id, content1, datetime.now(timezone.utc)))[0]['post'])
+print(db.query(create_post(user2_id, content2, datetime.now(timezone.utc)))[0]['post'])
 print("\n")
 
 print("-"*20 + "GET POSTS" + "-"*20)

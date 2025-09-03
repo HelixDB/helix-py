@@ -10,6 +10,7 @@ import numpy as np
 from tqdm import tqdm
 from functools import singledispatchmethod
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 class Query(ABC):
     """
@@ -81,14 +82,24 @@ class Client:
         port (int, optional): The port to use for the Helix server. Defaults to 6969.
         api_endpoint (str, optional): The API endpoint to use for the Helix server.
         verbose (bool, optional): Whether to print verbose output or not. Defaults to True.
+        max_workers (int, optional): The maximum number of workers to use for concurrent requests. Defaults to 1.
     """
-    def __init__(self, local: bool, port: int=6969, api_endpoint: str="", api_key: str=None, verbose: bool=True):
+    def __init__(
+        self, 
+        local: bool, 
+        port: int=6969, 
+        api_endpoint: str="", 
+        api_key: str=None, 
+        verbose: bool=True,
+        max_workers: int=1,
+    ):
         self.h_server_port = port
         self.h_server_api_endpoint = "" if local else api_endpoint
         self.h_server_url = "http://127.0.0.1" if local else self.h_server_api_endpoint
         self.verbose = verbose
         self.local = local
         self.api_key = api_key
+        self.max_workers = max_workers
 
         if local:
             try:
@@ -127,10 +138,12 @@ class Client:
         """
         full_endpoint = self._construct_full_url(query)
         total = len(payload) if isinstance(payload, list) else 1
-        payload = payload if isinstance(payload, list) else [payload]
-        payload = [{}] if len(payload) == 0 else payload
-
-        return self._send_reqs(payload, total, full_endpoint)
+        if isinstance(payload, list) and self.max_workers > 1 and len(payload) > 1:
+            return self._send_reqs_batched(payload, total, full_endpoint)
+        else:
+            payload = payload if isinstance(payload, list) else [payload]
+            payload = [{}] if len(payload) == 0 else payload
+            return self._send_reqs(payload, total, full_endpoint, verbose=self.verbose)
 
     @query.register
     def _(self, query: Query, payload=None) -> List[Any]:
@@ -148,9 +161,12 @@ class Client:
         full_endpoint = self._construct_full_url(query.endpoint)
         total = len(query_data) if hasattr(query_data, "__len__") else None
 
-        return self._send_reqs(query_data, total, full_endpoint, query)
+        if isinstance(query_data, list) and self.max_workers > 1 and len(query_data) > 1:
+            return self._send_reqs_batched(query_data, total, full_endpoint, query)
+        else:
+            return self._send_reqs(query_data, total, full_endpoint, query, verbose=self.verbose)
 
-    def _send_reqs(self, data, total, endpoint, query: Optional[Query]=None):
+    def _send_reqs(self, data, total, endpoint, query: Optional[Query]=None, verbose: bool=True):
         """
         Send requests to the helix server.
 
@@ -159,12 +175,13 @@ class Client:
             total (int, optional): The total number of requests to send. Defaults to None.
             endpoint (str): The endpoint to send the requests to.
             query (Query, optional): The Query object to send with the requests. Defaults to None.
+            verbose (bool, optional): Whether to print verbose output or not. Defaults to True.
 
         Returns:
             List[Any]: The response from the helix server.
         """
         responses = []
-        for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not self.verbose):
+        for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not verbose):
             req_data = json.dumps(d).encode("utf-8")
             try:
                 req = urllib.request.Request(
@@ -189,3 +206,24 @@ class Client:
 
         return responses
 
+    def _send_reqs_batched(self, data, total, endpoint, query: Optional[Query]=None):
+        """
+        Send requests to the helix server in batches.
+
+        Args:
+            data (List[Any]): The data to send.
+            total (int, optional): The total number of requests to send. Defaults to None.
+            endpoint (str): The endpoint to send the requests to.
+            query (Query, optional): The Query object to send with the requests. Defaults to None.
+
+        Returns:
+            List[Any]: The response from the helix server.
+        """
+        with ThreadPoolExecutor(max_workers=min(self.max_workers, len(data))) as executor:
+            futures = [executor.submit(self._send_reqs, [d], 1, endpoint, query, False) for d in data]
+
+            responses = []
+            for future in tqdm(futures, total=len(futures), desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not self.verbose):
+                responses.extend(future.result())
+
+            return responses
