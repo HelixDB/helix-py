@@ -60,4 +60,12 @@ class GeminiEmbedder(Embedder):
         config = types.EmbedContentConfig(output_dimensionality=self.dimensions)
         if task_type is not None:
             config.task_type = task_type
-        return [embedding.values for embedding in tqdm(self.client.models.embed_content(contents=data_list, model=self.model, config=config).embeddings, total=len(data_list), desc=f"{GHELIX} Embedding", file=sys.stderr)]
+        embeddings = []
+        pbar = tqdm(total=len(data_list), desc=f"{GHELIX} Embedding", file=sys.stderr)
+        for i in range(0, len(data_list), 100):
+            response = self.client.models.embed_content(contents=data_list[i:i+100], model=self.model, config=config)
+            for embedding in response.embeddings:
+                embeddings.append(embedding.values)
+                pbar.update(1)
+        pbar.close()
+        return embeddings
