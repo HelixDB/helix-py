@@ -116,7 +116,7 @@ class Client:
             return f"{self.h_server_url}/{endpoint}"
 
     @singledispatchmethod
-    def query(self, query, payload) -> List[Any]:
+    def query(self, query, payload: Optional[Payload|List[Payload]]=None) -> List[Any]:
         """
         This is a dispatcher method that handles different types of queries.
         For the standard query method, it takes a string and a payload.
@@ -131,7 +131,7 @@ class Client:
 
         Args:
             query (str): The query string.
-            payload (Payload|List[Payload]): The payload to send with the query.
+            payload (Payload|List[Payload]): The payload to send with the query. Defaults to None.
 
         Returns:
             List[Any]: The response from the helix server.
