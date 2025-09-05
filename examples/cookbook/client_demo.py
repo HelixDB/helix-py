@@ -17,7 +17,7 @@ user1_id = user1['id']
 user2_id = user2['id']
 
 print("-"*20 + "GET USERS" + "-"*20)
-for user in client.query("get_users", {})[0]['users']:
+for user in client.query("get_users")[0]['users']:
     print(user)
 print("\n")
 
@@ -40,7 +40,7 @@ print(
 print("\n")
 
 print("-"*20 + "GET POSTS" + "-"*20)
-for post in client.query("get_posts", {})[0]['posts']:
+for post in client.query("get_posts")[0]['posts']:
     print(post)
 print("\n")
 
