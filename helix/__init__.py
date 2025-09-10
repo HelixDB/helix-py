@@ -1,7 +1,4 @@
-# env vars?
-# debug output on specific env var like DEBUG=1
-
-from helix.client import Client, Query, hnswinsert, hnswsearch
+from helix.client import Client, Query
 from helix.types import Payload, EdgeType, Hnode, Hedge, Hvector, json_to_helix
 from helix.loader import Loader
 from helix.instance import Instance

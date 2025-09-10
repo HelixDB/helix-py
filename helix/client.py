@@ -1,4 +1,3 @@
-from helix.loader import Loader
 from helix.types import GHELIX, RHELIX, Payload
 import socket
 import json
@@ -24,54 +23,6 @@ class Query(ABC):
 
     @abstractmethod
     def response(self, response): pass
-
-class hnswinsert(Query):
-    def __init__(self, vector):
-        super().__init__()
-        self.vector = vector.tolist() if isinstance(vector, np.ndarray) else vector
-
-    def query(self) -> List[Payload]:
-        return [{ "vector": self.vector }]
-
-    def response(self, response) -> Any:
-        return response.get("res") # TODO: id of inserted vector
-
-class hnswload(Query):
-    def __init__(self, data_loader: Loader, batch_size: int=600):
-        super().__init__()
-        self.data_loader: Loader = data_loader
-        self.batch_size = batch_size
-
-    def query(self) -> List[Payload]:
-        data = self.data_loader.get_data()
-
-        payloads = []
-        for i in range(0, len(data), self.batch_size):
-            batch = data[i:i + self.batch_size]
-            payload = { "vectors": [vector.tolist() for vector in batch] }
-            payloads.append(payload)
-
-        return payloads
-
-    def response(self, response) -> Any:
-        return response.get("res")
-
-class hnswsearch(Query):
-    def __init__(self, query_vector: List[float], k: int=5):
-        super().__init__()
-        self.query_vector = query_vector
-        self.k = k
-
-    def query(self) -> List[Payload]:
-        return [{ "query": self.query_vector, "k": self.k }]
-
-    def response(self, response) -> Any:
-        try:
-            vectors = response.get("res")
-            return [(vector["id"], np.array(vector["data"], dtype=np.float64)) for vector in vectors]
-        except json.JSONDecodeError:
-            print(f"{RHELIX} Failed to parse response as JSON", file=sys.stderr)
-            return None
 
 class Client:
     """
