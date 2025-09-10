@@ -22,6 +22,18 @@ helix install
 
 ## Features
 
+### Client
+To setup a simple `Client` to interface with a running helix instance:
+```python
+import helix
+
+db = helix.Client(local=True, verbose=True)
+
+db.query('add_user', {"name": "John", "age": 20})
+```
+The default port is `6969`, but you can change it by passing in the `port` parameter.
+For cloud instances, you can pass in the `api_endpoint` parameter.
+
 ### Queries
 helix-py allows users to define a PyTorch-like manner, similar to how
 you would define a neural network's forward pass. You can use built-in queries in `helix/client.py`
@@ -50,32 +62,11 @@ class add_user(Query):
 
     def response(self, response):
         return response
+
+db.query(add_user("John", 20))
 ```
 
 Make sure that the `Query.query` method returns a list of objects.
-
-### Client
-To setup a simple `Client` to interface with a running helix instance:
-```python
-import helix
-from helix.client import hnswinsert, hnswsearch
-
-db = helix.Client(local=True, verbose=True)
-data = helix.Loader("path/to/data", cols=["vecs"])
-[db.query(hnswinsert(d)) for d in data] # build hnsw index
-
-my_query = [0.32, ..., -1.321]
-nearest = db.query(hnswsearch(my_query)) # query hnsw index
-
-# Calling your own query
-# Standard
-db.query('add_user', {"name": "John", "age": 20})
-
-# Pytorch-like
-db.query(add_user("John", 20))
-```
-The default port is `6969`, but you can change it by passing in the `port` parameter.
-For cloud instances, you can pass in the `api_endpoint` parameter.
 
 ### Instance
 To setup a simple `Instance` that automatically starts and stops a helix instance with respect
