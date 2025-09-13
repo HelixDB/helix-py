@@ -45,7 +45,7 @@ class EdgeTypes(Enum):
 
 class OutStepArgs(BaseModel):
     connection_id: str = Field(..., description="The connection id")
-    edge_type: EdgeTypes = Field(..., description="The target entity type (node or vec)")
+    edge_type: EdgeTypes = Field(..., description="The target entity type. Use 'node' when traversing to nodes and 'vec' when traversing to vectors.")
     edge_label: str = Field(..., description="The label/name of edge to traverse out")
 
 class OutEStepArgs(BaseModel):
@@ -54,7 +54,7 @@ class OutEStepArgs(BaseModel):
 
 class InStepArgs(BaseModel):
     connection_id: str = Field(..., description="The connection id")
-    edge_type: EdgeTypes = Field(..., description="The target entity type (node or vec)")
+    edge_type: EdgeTypes = Field(..., description="The target entity type. Use 'node' when traversing to nodes and 'vec' when traversing to vectors.")
     edge_label: str = Field(..., description="The label/name of edge to traverse into")
 
 class InEStepArgs(BaseModel):
@@ -434,7 +434,7 @@ class MCPServer:
         @self.mcp.tool(enabled=self.tool_config.search_vector)
         def search_vector(args: SearchVArgs) -> List[Dict[str, Any]]:
             """
-            Similairity searches the vectors in the traversal based on the given vector.
+            Similairity searches the vectors in the traversal based on the given vector. Assumes that the current state of the traversal is a collection of vectors.
 
             Returns:
                 List[Dict[str, Any]] (The first k vectors of the traversal result ordered by descending similarity)
@@ -497,6 +497,8 @@ class MCPServer:
             port (int, optional): The port to use. Defaults to 8000.
             **run_args: Additional arguments to pass to the run method.
         """
+        if transport == "stdio":
+            self.mcp.run(transport="stdio")
         self.mcp.run(transport=transport, host=host, port=port, **run_args)
 
     async def run_async(
@@ -515,6 +517,8 @@ class MCPServer:
             port (int, optional): The port to use. Defaults to 8000.
             **run_args: Additional arguments to pass to the run method.
         """
+        if transport == "stdio":
+            self.mcp.run(transport="stdio")
         await self.mcp.run_async(transport=transport, host=host, port=port, **run_args)
 
     def run_bg(
@@ -531,6 +535,8 @@ class MCPServer:
             threading.Thread: The daemon thread running the server.
         """
         def _runner():
+            if transport == "stdio":
+                self.mcp.run(transport="stdio")
             asyncio.run(self.mcp.run_async(transport=transport, host=host, port=port, **run_args))
 
         t = threading.Thread(target=_runner, daemon=True)
