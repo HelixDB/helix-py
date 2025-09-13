@@ -2,6 +2,7 @@ from __future__ import annotations
 import sys
 import asyncio
 import threading
+import json
 from fastmcp import FastMCP
 from fastmcp.tools.tool import Tool
 from helix.client import Client
@@ -289,6 +290,7 @@ class MCPServer:
             try:
                 if self.verbose: print(f"{GHELIX} MCP schema_resource", file=sys.stderr)
                 result = self.client.query('mcp/schema_resource', {'connection_id': connection_id})[0]
+                result = json.loads(result)
                 return {} if result is None else result
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP schema_resource failed: {e}")
