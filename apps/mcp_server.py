@@ -1,5 +1,7 @@
+# Adjust the directory args to where this file is located
+# You may need to run `which uv` and update the command to the path of the uv binary
+
 # For claude-desktop add this to ~/Library/Application Support/Claude/claude_desktop_config.json
-#   adjusting the directory to where this file is located
 """
 {
   "mcpServers": {
@@ -16,6 +18,21 @@
     }
   }
 }
+"""
+
+# For codex add this to ~/.codex/config.toml
+"""
+[mcp_servers.helix-mcp]
+command = "uv"
+args = [
+  "--directory",
+  "/Users/ln/dev/helix-py/apps/mcp_server",
+  "run",
+  "--python", "3.11",
+  "--with", "helix-py",
+  "mcp_server.py"
+]
+startup_timeout_ms = 20_000
 """
 
 from helix.client import Client
