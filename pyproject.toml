@@ -42,6 +42,7 @@ dependencies = [
     "requests>=2.32.4",
     "tqdm >= 4.67.1",
     "voyageai>=0.3.4",
+    "python-dotenv>=1.0.1",
 ]
 
 [project.urls]
