@@ -271,7 +271,7 @@ class MCPServer:
             except Exception as e:
                 raise Exception(f"{RHELIX} MCP reset failed: {e}")
 
-        @self.mcp.resource("resource://{connection_id}/schema")
+        @self.mcp.tool()
         def schema_resource(connection_id: str) -> Dict[str, Any]:
             """
             Get the schema for the given connection id

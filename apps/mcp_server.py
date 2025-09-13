@@ -21,6 +21,8 @@
 from helix.client import Client
 from helix.mcp import MCPServer
 from helix.embedding import OpenAIEmbedder
+from dotenv import load_dotenv
+load_dotenv()
 
 # Create a Helix client
 client = Client(local=True, port=6969)
@@ -29,7 +31,7 @@ client = Client(local=True, port=6969)
 embedder = OpenAIEmbedder()
 
 # Create an MCP server
-mcp_server = MCPServer("helix-mcp", client)
+mcp_server = MCPServer("helix-mcp", client, embedder=embedder)
 
 if __name__ == "__main__":
   # Run the MCP server on stdio transport
