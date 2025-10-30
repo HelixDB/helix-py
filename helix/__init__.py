@@ -7,17 +7,17 @@ from helix.instance import Instance
 
 try:  # requires helix-py[loader]
     from helix.loader import Loader
-except Exception:
+except ImportError:
     pass
 
 try:  # requires helix-py[chunking]
     from helix.chunk import Chunk
-except Exception:
+except ImportError:
     pass
 
 try:  # requires helix-py[mcp]
     from helix.mcp import MCPServer, ToolConfig
-except Exception:
+except ImportError:
     pass
 
 __version__ = "0.2.30"
