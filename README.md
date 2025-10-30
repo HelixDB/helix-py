@@ -8,8 +8,29 @@ well-suited for use cases such as similarity search, knowledge graph constructio
 
 ## Installation
 
-### Install helix-py
-`uv add helix-py` or `pip install helix-py`
+**Core (Client + Query):**
+
+```bash
+uv add helix-py
+# or
+pip install helix-py
+````
+
+**Optional features:**
+````
+Works with both `pip` and `uv add`.
+
+| Feature      | Description                                     | Install                                   |
+| ------------ | ----------------------------------------------- | ----------------------------------------- |
+| `loader`     | Data loading (vectors, parquet)                 | `pip install "helix-py[loader]"`          |
+| `chunking`   | Text chunking utilities                         | `pip install "helix-py[chunking]"`        |
+| `pdf`        | PDF parsing support                             | `pip install "helix-py[pdf]"`             |
+| `mcp`        | MCP server tools (graph traversal & search)     | `pip install "helix-py[mcp]"`             |
+| `embed-*`    | Embedders (`openai`, `gemini`, `voyageai`)      | `pip install "helix-py[embed-openai]"`    |
+| `provider-*` | LLM providers (`openai`, `gemini`, `anthropic`) | `pip install "helix-py[provider-openai]"` |
+| `embedders`  | All embedders                                   | `pip install "helix-py[embedders]"`       |
+| `providers`  | All providers                                   | `pip install "helix-py[providers]"`       |
+| `all`        | Everything                                      | `pip install "helix-py[all]"`             |
 
 See [getting started](https://github.com/HelixDB/helix-db?tab=readme-ov-file#getting-started) for more
 information on installing helix-db
@@ -21,6 +42,8 @@ helix install
 ```
 
 ## Features
+
+Some symbols are only available if the corresponding extra is installed. For example, `Chunk` requires `helix-py[chunking]`, `Loader` requires `helix-py[loader]`, and `MCPServer` requires `helix-py[mcp]`. See [Installation](#installation) for details.
 
 ### Client
 To setup a simple `Client` to interface with a running helix instance:
