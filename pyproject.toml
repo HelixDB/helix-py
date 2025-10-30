@@ -29,20 +29,76 @@ keywords = [
     "rag",
 ]
 dependencies = [
-    "anthropic>=0.64.0",
-    "chonkie[all]>=1.2.1",
-    "fastmcp>=2.10.6",
-    "google-genai>=1.31.0",
-    "markitdown[pdf]>=0.1.3",
-    "numpy >= 2.0.2",
-    "openai>=1.101.0",
-    "openai-agents>=0.2.9",
-    "pip>=25.1.1",
-    "pyarrow >= 19.0.1",
+    "tqdm>=4.67.1",
+]
+
+[project.optional-dependencies]
+loader = [
+    "numpy>=2.0.2",
+    "pyarrow>=19.0.1",
+]
+
+chunking = [
+    "chonkie>=1.2.1",
+    "tokenizers>=0.15",
     "requests>=2.32.4",
-    "tqdm >= 4.67.1",
+    "markitdown>=0.1.3",
+]
+
+pdf = [
+    "markitdown[pdf]>=0.1.3",
+    "pymupdf4llm>=0.0.25",
+]
+
+mcp = [
+    "fastmcp>=2.10.6",
+    "pydantic>=2.11.7",
+]
+
+embed-openai = [
+    "openai>=1.101.0",
+    "python-dotenv>=1.0.1",
+]
+
+embed-gemini = [
+    "google-genai>=1.31.0",
+    "python-dotenv>=1.0.1",
+]
+
+embed-voyageai = [
     "voyageai>=0.3.4",
     "python-dotenv>=1.0.1",
+]
+
+provider-openai = [
+    "openai-agents>=0.2.9",
+    "openai>=1.101.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.0.1",
+]
+
+provider-gemini = [
+    "google-genai>=1.31.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.0.1",
+]
+
+provider-anthropic = [
+    "anthropic>=0.64.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.0.1",
+]
+
+providers = [
+    "helix-py[provider-openai,provider-gemini,provider-anthropic]",
+]
+
+embedders = [
+    "helix-py[embed-openai,embed-gemini,embed-voyageai]",
+]
+
+all = [
+    "helix-py[loader,chunking,pdf,mcp,providers,embedders]",
 ]
 
 [project.urls]
