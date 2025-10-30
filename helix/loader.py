@@ -1,6 +1,5 @@
 from helix.types import DataType, GHELIX, RHELIX
 import os
-import csv
 from typing import Set, List, Tuple, Any, Optional
 import numpy as np
 from tqdm import tqdm # TODO: write custom (utils.py maybe)

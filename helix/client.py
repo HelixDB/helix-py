@@ -5,7 +5,6 @@ import urllib.request
 import urllib.error
 from typing import List, Optional, Any
 from abc import ABC, abstractmethod
-import numpy as np
 from tqdm import tqdm
 from functools import singledispatchmethod
 import sys
