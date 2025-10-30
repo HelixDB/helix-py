@@ -21,7 +21,7 @@ maintainers = [{ name = "Gahn Wuwong", email = "gahn@helix-db.com" }]
 description = "HelixDB Python SDK"
 readme = "README.md"
 requires-python = ">=3.10"
-liscense = { file = "LICENSE" }
+license = { file = "LICENSE" }
 keywords = [
     "artificial-intelligence",
     "machine-learning",
