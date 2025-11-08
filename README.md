@@ -14,10 +14,10 @@ well-suited for use cases such as similarity search, knowledge graph constructio
 uv add helix-py
 # or
 pip install helix-py
-````
+```
 
 **Optional features:**
-````
+
 Works with both `pip` and `uv add`.
 
 | Feature      | Description                                     | Install                                   |
