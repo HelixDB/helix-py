@@ -25,6 +25,10 @@ class HelixRequestError(HelixError):
         self.endpoint = endpoint
         super().__init__(f"Request failed: {status_code} - {message} at {endpoint}")
 
+class HelixNoValueFoundError(HelixRequestError):
+    """Raised when a requested resource is not found."""
+    pass
+
 class Query(ABC):
     """
     A base class for all queries.
@@ -147,6 +151,7 @@ class Client:
 
         Raises:
             HelixRequestError: If the server returns an error status.
+            HelixNoValueFoundError: If the requested resource is not found.
             HelixConnectionError: If there is a network/connection error.
         """
         responses = []
@@ -169,7 +174,11 @@ class Client:
                     else:
                         responses.append(json.loads(response.read().decode("utf-8")))
             except urllib.error.HTTPError as e:
-                raise HelixRequestError(e.code, e.read().decode("utf-8"), endpoint) from e
+                message = e.read().decode("utf-8")
+                if "No value found" in message:
+                    raise HelixNoValueFoundError(e.code, message, endpoint) from e
+                else:
+                    raise HelixRequestError(e.code, message, endpoint) from e
             except urllib.error.URLError as e:
                 raise HelixConnectionError(f"Connection failed: {e}") from e
 
