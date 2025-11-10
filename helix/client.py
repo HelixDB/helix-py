@@ -9,6 +9,9 @@ from tqdm import tqdm
 from functools import singledispatchmethod
 import sys
 from concurrent.futures import ThreadPoolExecutor
+import logging
+
+logger = logging.getLogger(__name__)
 
 class HelixError(Exception):
     """Base exception for Helix client errors."""
@@ -153,6 +156,7 @@ class Client:
             HelixRequestError: If the server returns an error status.
             HelixNoValueFoundError: If the requested resource is not found.
             HelixConnectionError: If there is a network/connection error.
+            Other exceptions: May propagate for unexpected errors (e.g., JSON serialization issues).
         """
         responses = []
         for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not verbose):
@@ -181,6 +185,9 @@ class Client:
                     raise HelixRequestError(e.code, message, endpoint) from e
             except urllib.error.URLError as e:
                 raise HelixConnectionError(f"Connection failed: {e}") from e
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}", exc_info=True)
+                raise
 
         return responses
 
