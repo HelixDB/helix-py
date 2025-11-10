@@ -10,6 +10,21 @@ from functools import singledispatchmethod
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
+class HelixError(Exception):
+    """Base exception for Helix client errors."""
+    pass
+
+class HelixConnectionError(HelixError):
+    """Raised for network/connection issues."""
+    pass
+
+class HelixRequestError(HelixError):
+    """Raised for HTTP request failures."""
+    def __init__(self, status_code, message, endpoint):
+        self.status_code = status_code
+        self.endpoint = endpoint
+        super().__init__(f"Request failed: {status_code} - {message} at {endpoint}")
+
 class Query(ABC):
     """
     A base class for all queries.
@@ -129,6 +144,10 @@ class Client:
 
         Returns:
             List[Any]: The response from the helix server.
+
+        Raises:
+            HelixRequestError: If the server returns an error status.
+            HelixConnectionError: If there is a network/connection error.
         """
         responses = []
         for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not verbose):
@@ -145,14 +164,14 @@ class Client:
                     req.add_header("x-api-key", self.api_key)
 
                 with urllib.request.urlopen(req) as response:
-                    if response.getcode() == 200:
-                        if query is not None:
-                            responses.append(query.response(json.loads(response.read().decode("utf-8"))))
-                        else:
-                            responses.append(json.loads(response.read().decode("utf-8")))
-            except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
-                responses.append(None)
+                    if query is not None:
+                        responses.append(query.response(json.loads(response.read().decode("utf-8"))))
+                    else:
+                        responses.append(json.loads(response.read().decode("utf-8")))
+            except urllib.error.HTTPError as e:
+                raise HelixRequestError(e.code, e.read().decode("utf-8"), endpoint) from e
+            except urllib.error.URLError as e:
+                raise HelixConnectionError(f"Connection failed: {e}") from e
 
         return responses
 
