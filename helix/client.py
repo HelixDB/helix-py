@@ -9,6 +9,28 @@ from tqdm import tqdm
 from functools import singledispatchmethod
 import sys
 from concurrent.futures import ThreadPoolExecutor
+import logging
+
+logger = logging.getLogger(__name__)
+
+class HelixError(Exception):
+    """Base exception for Helix client errors."""
+    pass
+
+class HelixConnectionError(HelixError):
+    """Raised for network/connection issues."""
+    pass
+
+class HelixRequestError(HelixError):
+    """Raised for HTTP request failures."""
+    def __init__(self, status_code, message, endpoint):
+        self.status_code = status_code
+        self.endpoint = endpoint
+        super().__init__(f"Request failed: {status_code} - {message} at {endpoint}")
+
+class HelixNoValueFoundError(HelixRequestError):
+    """Raised when a requested resource is not found."""
+    pass
 
 class Query(ABC):
     """
@@ -129,6 +151,12 @@ class Client:
 
         Returns:
             List[Any]: The response from the helix server.
+
+        Raises:
+            HelixRequestError: If the server returns an error status.
+            HelixNoValueFoundError: If the requested resource is not found.
+            HelixConnectionError: If there is a network/connection error.
+            Other exceptions: May propagate for unexpected errors (e.g., JSON serialization issues).
         """
         responses = []
         for d in tqdm(data, total=total, desc=f"{GHELIX} Querying '{endpoint}'", file=sys.stderr, disable=not verbose):
@@ -145,14 +173,21 @@ class Client:
                     req.add_header("x-api-key", self.api_key)
 
                 with urllib.request.urlopen(req) as response:
-                    if response.getcode() == 200:
-                        if query is not None:
-                            responses.append(query.response(json.loads(response.read().decode("utf-8"))))
-                        else:
-                            responses.append(json.loads(response.read().decode("utf-8")))
-            except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                print(f"{RHELIX} Query failed: {e}", file=sys.stderr)
-                responses.append(None)
+                    if query is not None:
+                        responses.append(query.response(json.loads(response.read().decode("utf-8"))))
+                    else:
+                        responses.append(json.loads(response.read().decode("utf-8")))
+            except urllib.error.HTTPError as e:
+                message = e.read().decode("utf-8")
+                if "No value found" in message:
+                    raise HelixNoValueFoundError(e.code, message, endpoint) from e
+                else:
+                    raise HelixRequestError(e.code, message, endpoint) from e
+            except urllib.error.URLError as e:
+                raise HelixConnectionError(f"Connection failed: {e}") from e
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}", exc_info=True)
+                raise
 
         return responses
 
