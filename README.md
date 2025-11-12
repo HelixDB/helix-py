@@ -1,5 +1,5 @@
 # helix-py
-[Helix-DB](https://github.com/HelixDB/helix-db) | [Homepage](https://www.helix-db.com/) | [Documentation](https://docs.helix-db.com/introduction/overview) | [PyPi](https://pypi.org/project/helix-py/)
+[Helix-DB](https://github.com/HelixDB/helix-db) | [Homepage](https://www.helix-db.com/) | [Documentation](https://docs.helix-db.com/documentation/sdks/helix-py) | [PyPi](https://pypi.org/project/helix-py/)
 
 helix-py is a Python library for interacting with [helix-db](https://github.com/HelixDB/helix-db) a
 powerful graph-vector database written in Rust. It provides both a simple query interface and a PyTorch-like
